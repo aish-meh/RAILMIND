@@ -675,11 +675,14 @@ export default function App() {
 
   const renderSidebar = () => (
     <div className="sidebar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', padding: '0 10px' }}>
-        <div style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', padding: '10px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)' }}>
-          <TrainFront size={24} color="white" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', padding: '4px 6px' }}>
+        <div style={{ background: '#0B2545', border: '2px solid #C5A059', padding: '10px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(197, 160, 89, 0.35)' }}>
+          <TrainFront size={22} color="#C5A059" />
         </div>
-        <h1 className="text-gradient" style={{ fontSize: '24px' }}>RailMind</h1>
+        <div>
+          <div style={{ color: '#C5A059', fontSize: '10px', fontWeight: '800', letterSpacing: '1.5px', textTransform: 'uppercase' }}>MINISTRY OF RAILWAYS</div>
+          <h1 style={{ fontSize: '20px', fontFamily: 'Georgia, serif', color: '#FFFFFF', margin: 0, fontWeight: '700' }}>RailMind</h1>
+        </div>
       </div>
       
       <div 
@@ -787,14 +790,16 @@ export default function App() {
 
   const renderDashboard = () => (
     <>
-      <header style={{ display: 'flex', alignItems: 'center', marginBottom: '30px', gap: '15px' }}>
+      <header style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', gap: '15px', padding: '10px 0' }}>
         <div>
-          <h1 className="text-gradient" style={{ fontSize: '32px' }}>Live Operations Command</h1>
-          <p className="text-gradient-accent" style={{ fontSize: '15px', fontWeight: '600', letterSpacing: '0.5px', marginTop: '2px' }}>Delay Propagation & Recovery</p>
+          <h1 style={{ fontSize: '28px', color: '#0F172A', fontWeight: '800' }}>Live Operations Command</h1>
+          <p style={{ fontSize: '13px', fontWeight: '700', color: '#64748B', letterSpacing: '1px', textTransform: 'uppercase', marginTop: '2px' }}>
+            DELAY PROPAGATION & MULTI-AGENT RECOVERY
+          </p>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: isProcessing ? 'var(--warning)' : 'var(--success)', animation: isProcessing ? 'pulseGlow 1.5s infinite' : 'none' }}></div>
-          <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{isProcessing ? 'Agents Active' : 'System Ready'}</span>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 16px', borderRadius: '20px', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isProcessing ? '#D97706' : '#10B981', animation: isProcessing ? 'pulseGlow 1.5s infinite' : 'none' }}></div>
+          <span style={{ fontSize: '12px', fontWeight: '700', color: '#0F172A' }}>{isProcessing ? 'AGENTS ACTIVE' : 'SYSTEM READY'}</span>
         </div>
       </header>
 
