@@ -115,6 +115,14 @@ async def get_announcements():
 async def get_incident_reports():
     return INCIDENT_REPORTS
 
+@app.post("/api/clear-incident-reports")
+async def clear_incident_reports():
+    global INCIDENT_REPORTS
+    INCIDENT_REPORTS = []
+    save_incident_reports()
+    return {"status": "Incident reports log cleared"}
+
+
 # ---------------------------------------------------------------------------
 # Retention Policy & Role-Based Access Control
 # ---------------------------------------------------------------------------

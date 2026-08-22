@@ -122,7 +122,22 @@ export default function App() {
       .then(data => setAnnouncementsLog(data))
       .catch(err => console.error("Error fetching announcements:", err));
 
+    fetch('/api/incident-reports')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const formatted = data.map(item => ({
+            id: item.id || Date.now(),
+            date: item.created_at ? new Date(item.created_at).toLocaleString() : new Date().toLocaleString(),
+            content: item.content
+          })).reverse();
+          setHistoricalReports(formatted);
+        }
+      })
+      .catch(err => console.error("Error fetching incident reports:", err));
+
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
     const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
     
     ws.onmessage = (event) => {
@@ -445,6 +460,17 @@ export default function App() {
     } catch (err) {
       console.error(err);
       showToast("error", "Error", "Failed to clear announcement logs.");
+    }
+  };
+
+  const handleClearIncidentReports = async () => {
+    try {
+      await fetch('/api/clear-incident-reports', { method: 'POST' });
+      setHistoricalReports([]);
+      showToast("success", "History Cleared", "Successfully cleared all historical incident reports.");
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Error", "Failed to clear incident reports.");
     }
   };
 
@@ -1711,8 +1737,22 @@ export default function App() {
         {activeTab === 'reports' && (
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px', height: '100%', overflowY: 'auto', flex: 1 }}>
-            <h2 className="text-gradient" style={{ fontSize: '28px' }}>Incident History</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '10px' }}>A log of all AI-generated incident reports from this session.</p>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div>
+                <h2 className="text-gradient" style={{ fontSize: '28px' }}>Incident History</h2>
+                <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>A persistent historical record of all AI-generated incident reports.</p>
+              </div>
+              {historicalReports.length > 0 && (
+                <button 
+                  className="btn-primary" 
+                  onClick={handleClearIncidentReports}
+                  style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--error)', border: '1px solid rgba(244, 63, 94, 0.3)', boxShadow: 'none', padding: '10px 18px', fontSize: '14px' }}
+                >
+                  <Trash2 size={16} style={{ marginRight: '8px', display: 'inline', verticalAlign: 'middle' }} /> Clear Incident History
+                </button>
+              )}
+            </header>
+
             
             {historicalReports.length === 0 ? (
               <div className="glass-panel" style={{ padding: '40px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
