@@ -49,10 +49,13 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-# Load announcements at startup
+# Load announcements and incident reports at startup
 import os
-ANNOUNCEMENTS_FILE = "announcements_log.json"
-ANNOUNCEMENTS_LOG = []
+ANNOUNCEMENTS_FILE = os.path.join(os.path.dirname(__file__), "announcements_log.json")
+INCIDENT_REPORTS_FILE = os.path.join(os.path.dirname(__file__), "incident_reports_log.json")
+
+ANNOUNCEMENTS_LOG: List[dict] = []
+INCIDENT_REPORTS: List[dict] = []
 
 def load_announcements():
     global ANNOUNCEMENTS_LOG
@@ -73,7 +76,27 @@ def save_announcements():
     except Exception as e:
         print(f"Error saving announcements: {e}")
 
+def load_incident_reports():
+    global INCIDENT_REPORTS
+    if os.path.exists(INCIDENT_REPORTS_FILE):
+        try:
+            with open(INCIDENT_REPORTS_FILE, "r", encoding="utf-8") as f:
+                INCIDENT_REPORTS = json.load(f)
+        except Exception as e:
+            print(f"Error loading incident reports: {e}")
+            INCIDENT_REPORTS = []
+    else:
+        INCIDENT_REPORTS = []
+
+def save_incident_reports():
+    try:
+        with open(INCIDENT_REPORTS_FILE, "w", encoding="utf-8") as f:
+            json.dump(INCIDENT_REPORTS, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error saving incident reports: {e}")
+
 load_announcements()
+load_incident_reports()
 
 @app.get("/api/initial-state")
 async def get_initial_state():
@@ -86,42 +109,70 @@ async def get_initial_state():
 async def get_announcements():
     return ANNOUNCEMENTS_LOG
 
-# Retention Policy API Endpoints
+@app.get("/api/incident-reports")
+async def get_incident_reports():
+    return INCIDENT_REPORTS
 
-def validate_write_permission(role: str):
-    if role == RetentionRole.VIEWER.value:
-        raise HTTPException(
-            status_code=403,
-            detail="Forbidden: Viewer role has read-only access and cannot modify retention state."
-        )
+# ---------------------------------------------------------------------------
+# Retention Policy & Role-Based Access Control
+# ---------------------------------------------------------------------------
 
-@app.get("/api/retention/records", response_model=List[RetentionRecord])
+ROLE_HIERARCHY = {
+    "viewer": 1,
+    "station_master": 2,
+    "controller": 3
+}
+
+def require_role(min_role: str):
+    """
+    FastAPI dependency enforcing viewer < station_master < controller hierarchy.
+    Extracts the X-Role header (case-insensitive) and validates permissions.
+    """
+    def dependency(x_role: Optional[str] = Header(default="viewer", alias="X-Role")) -> str:
+        role = (x_role or "viewer").strip().lower()
+        if role not in ROLE_HIERARCHY:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid X-Role: '{x_role}'. Allowed roles: {list(ROLE_HIERARCHY.keys())}"
+            )
+        if ROLE_HIERARCHY[role] < ROLE_HIERARCHY[min_role]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Forbidden: '{role}' role does not have sufficient permissions. Requires at least '{min_role}'."
+            )
+        return role
+    return dependency
+
+from fastapi import APIRouter, Depends
+from retention import create_record, parse_iso_datetime
+from datetime import datetime, timezone
+
+retention_router = APIRouter(prefix="/api/retention", tags=["retention"])
+
+@retention_router.get("/records", response_model=List[RetentionRecord])
 async def get_retention_records(
     status: Optional[str] = Query(default=None, description="Filter by retention status (active, archived, pending_deletion, deleted)"),
     entity_type: Optional[str] = Query(default=None, description="Filter by entity type"),
-    x_role: Optional[str] = Header(default="viewer", alias="X-Role")
+    role: str = Depends(require_role("viewer"))
 ):
     return retention_store.get_records(status=status, entity_type=entity_type)
 
-@app.get("/api/retention/audit-trail/{record_id}", response_model=List[RetentionAuditEntry])
+@retention_router.get("/audit-trail/{record_id}", response_model=List[RetentionAuditEntry])
 async def get_retention_audit_trail(
     record_id: str,
-    x_role: Optional[str] = Header(default="viewer", alias="X-Role")
+    role: str = Depends(require_role("viewer"))
 ):
     record = retention_store.get_record(record_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
     return retention_store.get_audit_trail(record_id)
 
-@app.post("/api/retention/archive/{record_id}", response_model=RetentionRecord)
+@retention_router.post("/archive/{record_id}", response_model=RetentionRecord)
 async def archive_retention_record(
     record_id: str,
     payload: Optional[ReasonPayload] = Body(default=None),
-    x_role: Optional[str] = Header(default="viewer", alias="X-Role")
+    role: str = Depends(require_role("station_master"))
 ):
-    role = (x_role or "viewer").strip().lower()
-    validate_write_permission(role)
-
     record = retention_store.get_record(record_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
@@ -139,15 +190,12 @@ async def archive_retention_record(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/retention/request-delete/{record_id}", response_model=RetentionRecord)
+@retention_router.post("/request-delete/{record_id}", response_model=RetentionRecord)
 async def request_delete_retention_record(
     record_id: str,
     payload: Optional[ReasonPayload] = Body(default=None),
-    x_role: Optional[str] = Header(default="viewer", alias="X-Role")
+    role: str = Depends(require_role("station_master"))
 ):
-    role = (x_role or "viewer").strip().lower()
-    validate_write_permission(role)
-
     record = retention_store.get_record(record_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
@@ -167,15 +215,12 @@ async def request_delete_retention_record(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/retention/restore/{record_id}", response_model=RetentionRecord)
+@retention_router.post("/restore/{record_id}", response_model=RetentionRecord)
 async def restore_retention_record(
     record_id: str,
     payload: Optional[ReasonPayload] = Body(default=None),
-    x_role: Optional[str] = Header(default="viewer", alias="X-Role")
+    role: str = Depends(require_role("station_master"))
 ):
-    role = (x_role or "viewer").strip().lower()
-    validate_write_permission(role)
-
     record = retention_store.get_record(record_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
@@ -193,22 +238,28 @@ async def restore_retention_record(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/retention/approve-delete/{record_id}", response_model=RetentionRecord)
+@retention_router.post("/approve-delete/{record_id}", response_model=RetentionRecord)
 async def approve_delete_retention_record(
     record_id: str,
     payload: Optional[ReasonPayload] = Body(default=None),
-    x_role: Optional[str] = Header(default="viewer", alias="X-Role")
+    role: str = Depends(require_role("controller"))
 ):
-    role = (x_role or "viewer").strip().lower()
-    if role != RetentionRole.CONTROLLER.value:
-        raise HTTPException(
-            status_code=403,
-            detail="Forbidden: Controller role is required to approve deletion."
-        )
-
     record = retention_store.get_record(record_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
+
+    if not record.scheduled_purge_at:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete record '{record_id}': no scheduled_purge_at date set."
+        )
+
+    purge_dt = parse_iso_datetime(record.scheduled_purge_at)
+    if datetime.now(timezone.utc) < purge_dt:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete record '{record_id}': scheduled_purge_at ({record.scheduled_purge_at}) has not passed yet."
+        )
 
     reason = payload.reason if payload and payload.reason else "Permanent deletion approved by controller"
     try:
@@ -223,6 +274,9 @@ async def approve_delete_retention_record(
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+app.include_router(retention_router)
+
 
 
 
@@ -284,6 +338,14 @@ async def run_agents(event: DelayEvent):
                 ANNOUNCEMENTS_LOG.extend(serialized_anns)
                 save_announcements()
                 
+                # Persist retention record for announcement batch
+                create_record(
+                    entity_type="announcement",
+                    content_ref=serialized_anns,
+                    actor="system",
+                    reason="Automated announcement batch generated during incident processing"
+                )
+                
                 await manager.broadcast(json.dumps({
                     "type": "announcements",
                     "data": serialized_anns
@@ -297,9 +359,26 @@ async def run_agents(event: DelayEvent):
                 
             # If report is ready
             if "incident_report" in state_update:
-                 await manager.broadcast(json.dumps({
+                report_content = state_update["incident_report"]
+                report_entry = {
+                    "id": f"rep-{int(datetime.now(timezone.utc).timestamp())}",
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "content": report_content
+                }
+                INCIDENT_REPORTS.append(report_entry)
+                save_incident_reports()
+                
+                # Persist retention record for incident report
+                create_record(
+                    entity_type="incident_report",
+                    content_ref=report_entry,
+                    actor="system",
+                    reason="Comprehensive AI incident report generated"
+                )
+                
+                await manager.broadcast(json.dumps({
                     "type": "report",
-                    "data": state_update["incident_report"]
+                    "data": report_content
                 }))
         
         await asyncio.sleep(0.5) # Slight pause to make the UI look like agents are "thinking"

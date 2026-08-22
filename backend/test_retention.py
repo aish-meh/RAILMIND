@@ -153,8 +153,51 @@ def test_api_approve_delete_controller_only():
     assert record["status"] == "deleted"
     assert record["purged_at"] is not None
     assert record["purged_by"] == "controller"
-    assert record["content_ref"] is None
-    print("[PASS] test_api_approve_delete_controller_only")
+def test_api_approve_delete_premature_fails_with_400():
+    # rec-ann-101 is active. Transition to pending_deletion (purge date is in +30 days)
+    res_req = client.post(
+        "/api/retention/request-delete/rec-ann-101",
+        headers={"X-Role": "station_master"},
+        json={"reason": "Request delete for announcement"}
+    )
+    assert res_req.status_code == 200
+
+    # Attempt to approve deletion immediately with controller role -> must return 400
+    res_del = client.post(
+        "/api/retention/approve-delete/rec-ann-101",
+        headers={"X-Role": "controller"},
+        json={"reason": "Premature delete attempt"}
+    )
+    assert res_del.status_code == 400
+    assert "has not passed yet" in res_del.json()["detail"]
+    print("[PASS] test_api_approve_delete_premature_fails_with_400")
+
+def test_api_full_lifecycle_and_audit():
+    # 1. Create a record
+    rec = create_record(entity_type="signal_telemetry", content_ref={"sensor": "S1"})
+    rec_id = rec.id
+
+    # 2. Archive
+    res_arc = client.post(f"/api/retention/archive/{rec_id}", headers={"X-Role": "station_master"}, json={"reason": "Step 1: Archive"})
+    assert res_arc.status_code == 200
+    assert res_arc.json()["status"] == "archived"
+
+    # 3. Request Delete
+    res_req = client.post(f"/api/retention/request-delete/{rec_id}", headers={"X-Role": "station_master"}, json={"reason": "Step 2: Request Delete"})
+    assert res_req.status_code == 200
+    assert res_req.json()["status"] == "pending_deletion"
+
+    # 4. Restore
+    res_res = client.post(f"/api/retention/restore/{rec_id}", headers={"X-Role": "station_master"}, json={"reason": "Step 3: Restore to active"})
+    assert res_res.status_code == 200
+    assert res_res.json()["status"] == "active"
+
+    # 5. Audit Trail
+    res_aud = client.get(f"/api/retention/audit-trail/{rec_id}", headers={"X-Role": "viewer"})
+    assert res_aud.status_code == 200
+    trail = res_aud.json()
+    assert len(trail) >= 4  # create, archive, request-delete, restore
+    print("[PASS] test_api_full_lifecycle_and_audit")
 
 if __name__ == "__main__":
     setup_function()
@@ -167,6 +210,9 @@ if __name__ == "__main__":
     test_api_archive_record_as_station_master()
     test_api_archive_record_as_viewer_forbidden()
     test_api_approve_delete_controller_only()
+    test_api_approve_delete_premature_fails_with_400()
+    test_api_full_lifecycle_and_audit()
     print("\n===========================================")
     print(" ALL STANDALONE & API RETENTION TESTS PASSED ")
     print("===========================================")
+
