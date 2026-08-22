@@ -14,16 +14,11 @@ import {
   VolumeX, 
   Trash2, 
   Settings as SettingsIcon,
-  Database,
-  Shield,
-  RotateCcw,
-  Archive,
-  Eye,
-  RefreshCw,
-  Filter
+  Database
 } from 'lucide-react';
 
 import { MultiLanguageVoiceControl } from './components/MultiLanguageVoiceControl';
+import RetentionPanel from './components/RetentionPanel';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -651,6 +646,10 @@ export default function App() {
 
       case 'show_incidents':
         setActiveTab('reports');
+        break;
+
+      case 'show_retention':
+        setActiveTab('retention');
         break;
 
       case 'show_status':
@@ -1695,7 +1694,7 @@ export default function App() {
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'network' && renderNetworkTopology()}
         {activeTab === 'announcements' && renderAnnouncements()}
-        {activeTab === 'retention' && renderRetention()}
+        {activeTab === 'retention' && <RetentionPanel showToast={showToast} />}
         {activeTab === 'settings' && renderSettings()}
         {activeTab === 'reports' && (
 
