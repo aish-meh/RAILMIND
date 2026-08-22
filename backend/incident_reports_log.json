@@ -8,5 +8,10 @@
     "id": "rep-1787400001",
     "created_at": "2026-08-22T12:00:01.520568+00:00",
     "content": "## Incident Report: Signal Failure\n**Time:** 2026-08-22 17:30\n**Severity:** Critical\n**Primary Train:** Rajdhani Express (12302)\n**Location:** New Delhi\n**Delay:** 30 minutes\n\n### Financial & Operations Impact\n- **Stranded Passengers:** ~3,000\n- **Estimated Compensation / Loss:** ₹900,000 INR\n\n### Impact Summary\n- Cascading impact on 2 other trains.\n- New schedules generated and synchronized.\n- Station authorities notified."
+  },
+  {
+    "id": "rep-1787400647",
+    "created_at": "2026-08-22T12:10:47.104394+00:00",
+    "content": "## Incident Report: Signal Failure\n**Time:** 2026-08-22 17:40\n**Severity:** Critical\n**Primary Train:** Vande Bharat Express (22436)\n**Location:** New Delhi\n**Delay:** 30 minutes\n\n### Financial & Operations Impact\n- **Stranded Passengers:** ~3,000\n- **Estimated Compensation / Loss:** ₹900,000 INR\n\n### Impact Summary\n- Cascading impact on 2 other trains.\n- New schedules generated and synchronized.\n- Station authorities notified."
   }
 ]

@@ -3,12 +3,12 @@
     "rec-ann-101": {
       "id": "rec-ann-101",
       "entity_type": "announcement",
-      "status": "pending_deletion",
+      "status": "active",
       "created_at": "2026-08-20T10:00:00Z",
-      "status_changed_at": "2026-08-22T12:09:55.483429+00:00",
-      "status_changed_by": "station_master",
-      "reason": "Request delete for announcement",
-      "scheduled_purge_at": "2026-09-21T12:09:55.483401+00:00",
+      "status_changed_at": "2026-08-22T11:32:33.998050+00:00",
+      "status_changed_by": "controller",
+      "reason": "Restored to active status",
+      "scheduled_purge_at": null,
       "purged_at": null,
       "purged_by": null,
       "content_ref": {
@@ -19,11 +19,11 @@
     "rec-rep-202": {
       "id": "rec-rep-202",
       "entity_type": "incident_report",
-      "status": "archived",
+      "status": "active",
       "created_at": "2026-08-15T14:30:00Z",
-      "status_changed_at": "2026-08-18T09:15:00Z",
-      "status_changed_by": "station_master",
-      "reason": "Incident investigation completed; archived for compliance",
+      "status_changed_at": "2026-08-22T11:35:58.300282+00:00",
+      "status_changed_by": "controller",
+      "reason": "Restored to active status",
       "scheduled_purge_at": null,
       "purged_at": null,
       "purged_by": null,
@@ -36,11 +36,11 @@
       "entity_type": "signal_telemetry",
       "status": "deleted",
       "created_at": "2026-07-01T00:00:00Z",
-      "status_changed_at": "2026-08-22T12:09:55.477899+00:00",
+      "status_changed_at": "2026-08-22T11:23:50.522298+00:00",
       "status_changed_by": "controller",
-      "reason": "Controller confirmed deletion",
+      "reason": "Permanent deletion approved by controller",
       "scheduled_purge_at": "2026-08-21T08:00:00Z",
-      "purged_at": "2026-08-22T12:09:55.477899+00:00",
+      "purged_at": "2026-08-22T11:23:50.522298+00:00",
       "purged_by": "controller",
       "content_ref": null
     },
@@ -72,82 +72,599 @@
         "schedule_id": "sched-505"
       }
     },
-    "rec-ann-584eb7": {
-      "id": "rec-ann-584eb7",
+    "rec-ann-96aec8": {
+      "id": "rec-ann-96aec8",
       "entity_type": "announcement",
       "status": "active",
-      "created_at": "2026-08-22T12:09:55.431934+00:00",
-      "status_changed_at": "2026-08-22T12:09:55.431934+00:00",
-      "status_changed_by": "station_master",
-      "reason": "Manual creation",
+      "created_at": "2026-08-22T11:34:41.410989+00:00",
+      "status_changed_at": "2026-08-22T11:34:41.410989+00:00",
+      "status_changed_by": "system",
+      "reason": "Automated announcement batch generated during incident processing",
       "scheduled_purge_at": null,
       "purged_at": null,
       "purged_by": null,
-      "content_ref": {
-        "test": 123
-      }
+      "content_ref": [
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 30,
+          "new_time": "06:30",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 30 minutes. It is now expected to arrive at New Delhi at 06:30. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 06:30 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 06:30 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、30 分遅れて運行しております。ニューデリー 駅への到着は 06:30 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 30,
+          "new_time": "10:38",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 30 minutes. It is now expected to arrive at Kanpur Central at 10:38. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 10:38 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 10:38 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、30 分遅れて運行しております。カーンプル・セントラル 駅への到着は 10:38 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "PRYJ",
+          "station_name": "Prayagraj Junction",
+          "delay_minutes": 30,
+          "new_time": "12:38",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 30 minutes. It is now expected to arrive at Prayagraj Junction at 12:38. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 12:38 बजे प्रयागराज जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 12:38 மணிக்கு பிரயாக்ராஜ் சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、30 分遅れて運行しております。プラヤグラージ 駅への到着は 12:38 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "BSB",
+          "station_name": "Varanasi Junction",
+          "delay_minutes": 30,
+          "new_time": "14:30",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 30 minutes. It is now expected to arrive at Varanasi Junction at 14:30. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 14:30 बजे वाराणसी जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 14:30 மணிக்கு வாரணாசி சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、30 分遅れて運行しております。ヴァーラーナシー 駅への到着は 14:30 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 15,
+          "new_time": "17:05",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at New Delhi at 17:05. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 17:05 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 17:05 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。ニューデリー 駅への到着は 17:05 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 15,
+          "new_time": "21:47",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at Kanpur Central at 21:47. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 21:47 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 21:47 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。カーンプル・セントラル 駅への到着は 21:47 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "PRYJ",
+          "station_name": "Prayagraj Junction",
+          "delay_minutes": 15,
+          "new_time": "23:58",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at Prayagraj Junction at 23:58. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 23:58 बजे प्रयागराज जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 23:58 மணிக்கு பிரயாக்ராஜ் சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。プラヤグラージ 駅への到着は 23:58 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "PNBE",
+          "station_name": "Patna Junction",
+          "delay_minutes": 15,
+          "new_time": "04:15",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at Patna Junction at 04:15. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 04:15 बजे पटना जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 04:15 மணிக்கு பாட்னா சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。パトナ 駅への到着は 04:15 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "HWH",
+          "station_name": "Howrah Junction",
+          "delay_minutes": 15,
+          "new_time": "10:10",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at Howrah Junction at 10:10. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 10:10 बजे हावड़ा जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 10:10 மணிக்கு ஹவுரா சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。ハウラー 駅への到着は 10:10 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t3",
+          "train_name": "Shatabdi Express",
+          "train_number": "12004",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 15,
+          "new_time": "06:25",
+          "text_en": "Attention passengers. Train number 12004, Shatabdi Express, is running late by 15 minutes. It is now expected to arrive at New Delhi at 06:25. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12004, शताब्दी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 06:25 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12004, சதாப்தி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 06:25 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12004、シャターブディー・エクスプレス は、15 分遅れて運行しております。ニューデリー 駅への到着は 06:25 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        },
+        {
+          "train_id": "t3",
+          "train_name": "Shatabdi Express",
+          "train_number": "12004",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 15,
+          "new_time": "11:40",
+          "text_en": "Attention passengers. Train number 12004, Shatabdi Express, is running late by 15 minutes. It is now expected to arrive at Kanpur Central at 11:40. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12004, शताब्दी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 11:40 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12004, சதாப்தி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 11:40 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12004、シャターブディー・エクスプレス は、15 分遅れて運行しております。カーンプル・セントラル 駅への到着は 11:40 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:04:40"
+        }
+      ]
     },
-    "rec-tra-5aab7c": {
-      "id": "rec-tra-5aab7c",
-      "entity_type": "train_schedule",
-      "status": "deleted",
-      "created_at": "2026-08-22T12:09:55.433215+00:00",
-      "status_changed_at": "2026-08-22T12:09:55.441904+00:00",
-      "status_changed_by": "controller",
-      "reason": "Purge executed",
-      "scheduled_purge_at": "2026-08-21T12:09:55.441047+00:00",
-      "purged_at": "2026-08-22T12:09:55.441904+00:00",
-      "purged_by": "controller",
-      "content_ref": null
-    },
-    "rec-cct-217aac": {
-      "id": "rec-cct-217aac",
-      "entity_type": "cctv_log",
-      "status": "pending_deletion",
-      "created_at": "2026-08-22T12:09:55.442864+00:00",
-      "status_changed_at": "2026-08-22T12:09:55.444136+00:00",
-      "status_changed_by": "station_master",
-      "reason": "Created new cctv_log retention record",
-      "scheduled_purge_at": "2026-09-21T12:09:55.444136+00:00",
-      "purged_at": null,
-      "purged_by": null,
-      "content_ref": {
-        "video": "url"
-      }
-    },
-    "rec-inc-fe1b0a": {
-      "id": "rec-inc-fe1b0a",
+    "rec-inc-6b7c80": {
+      "id": "rec-inc-6b7c80",
       "entity_type": "incident_report",
       "status": "active",
-      "created_at": "2026-08-22T12:09:55.445451+00:00",
-      "status_changed_at": "2026-08-22T12:09:55.445451+00:00",
+      "created_at": "2026-08-22T11:34:42.934320+00:00",
+      "status_changed_at": "2026-08-22T11:34:42.934320+00:00",
       "status_changed_by": "system",
-      "reason": "Created new incident_report retention record",
-      "scheduled_purge_at": null,
-      "purged_at": null,
-      "purged_by": null,
-      "content_ref": null
-    },
-    "rec-sig-20742f": {
-      "id": "rec-sig-20742f",
-      "entity_type": "signal_telemetry",
-      "status": "active",
-      "created_at": "2026-08-22T12:09:55.489711+00:00",
-      "status_changed_at": "2026-08-22T12:09:55.509126+00:00",
-      "status_changed_by": "station_master",
-      "reason": "Step 3: Restore to active",
+      "reason": "Comprehensive AI incident report generated",
       "scheduled_purge_at": null,
       "purged_at": null,
       "purged_by": null,
       "content_ref": {
-        "sensor": "S1"
+        "id": "rep-1787398482",
+        "created_at": "2026-08-22T11:34:42.930803+00:00",
+        "content": "## Incident Report: Signal Failure\n**Time:** 2026-08-22 17:04\n**Severity:** Critical\n**Primary Train:** Vande Bharat Express (22436)\n**Location:** New Delhi\n**Delay:** 30 minutes\n\n### Financial & Operations Impact\n- **Stranded Passengers:** ~3,000\n- **Estimated Compensation / Loss:** ₹900,000 INR\n\n### Impact Summary\n- Cascading impact on 2 other trains.\n- New schedules generated and synchronized.\n- Station authorities notified."
+      }
+    },
+    "rec-ann-67248a": {
+      "id": "rec-ann-67248a",
+      "entity_type": "announcement",
+      "status": "active",
+      "created_at": "2026-08-22T11:59:59.994054+00:00",
+      "status_changed_at": "2026-08-22T11:59:59.994054+00:00",
+      "status_changed_by": "system",
+      "reason": "Automated announcement batch generated during incident processing",
+      "scheduled_purge_at": null,
+      "purged_at": null,
+      "purged_by": null,
+      "content_ref": [
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 30,
+          "new_time": "17:20",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 30 minutes. It is now expected to arrive at New Delhi at 17:20. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 17:20 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 17:20 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、30 分遅れて運行しております。ニューデリー 駅への到着は 17:20 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 30,
+          "new_time": "22:02",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 30 minutes. It is now expected to arrive at Kanpur Central at 22:02. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 22:02 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 22:02 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、30 分遅れて運行しております。カーンプル・セントラル 駅への到着は 22:02 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "PRYJ",
+          "station_name": "Prayagraj Junction",
+          "delay_minutes": 30,
+          "new_time": "00:13",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 30 minutes. It is now expected to arrive at Prayagraj Junction at 00:13. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 00:13 बजे प्रयागराज जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 00:13 மணிக்கு பிரயாக்ராஜ் சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、30 分遅れて運行しております。プラヤグラージ 駅への到着は 00:13 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "PNBE",
+          "station_name": "Patna Junction",
+          "delay_minutes": 30,
+          "new_time": "04:30",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 30 minutes. It is now expected to arrive at Patna Junction at 04:30. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 04:30 बजे पटना जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 04:30 மணிக்கு பாட்னா சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、30 分遅れて運行しております。パトナ 駅への到着は 04:30 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "HWH",
+          "station_name": "Howrah Junction",
+          "delay_minutes": 30,
+          "new_time": "10:25",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 30 minutes. It is now expected to arrive at Howrah Junction at 10:25. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 10:25 बजे हावड़ा जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 10:25 மணிக்கு ஹவுரா சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、30 分遅れて運行しております。ハウラー 駅への到着は 10:25 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 15,
+          "new_time": "06:15",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 15 minutes. It is now expected to arrive at New Delhi at 06:15. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 06:15 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 06:15 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、15 分遅れて運行しております。ニューデリー 駅への到着は 06:15 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 15,
+          "new_time": "10:23",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 15 minutes. It is now expected to arrive at Kanpur Central at 10:23. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 10:23 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 10:23 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、15 分遅れて運行しております。カーンプル・セントラル 駅への到着は 10:23 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "PRYJ",
+          "station_name": "Prayagraj Junction",
+          "delay_minutes": 15,
+          "new_time": "12:23",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 15 minutes. It is now expected to arrive at Prayagraj Junction at 12:23. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 12:23 बजे प्रयागराज जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 12:23 மணிக்கு பிரயாக்ராஜ் சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、15 分遅れて運行しております。プラヤグラージ 駅への到着は 12:23 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "BSB",
+          "station_name": "Varanasi Junction",
+          "delay_minutes": 15,
+          "new_time": "14:15",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 15 minutes. It is now expected to arrive at Varanasi Junction at 14:15. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 14:15 बजे वाराणसी जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 14:15 மணிக்கு வாரணாசி சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、15 分遅れて運行しております。ヴァーラーナシー 駅への到着は 14:15 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t3",
+          "train_name": "Shatabdi Express",
+          "train_number": "12004",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 15,
+          "new_time": "06:25",
+          "text_en": "Attention passengers. Train number 12004, Shatabdi Express, is running late by 15 minutes. It is now expected to arrive at New Delhi at 06:25. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12004, शताब्दी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 06:25 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12004, சதாப்தி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 06:25 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12004、シャターブディー・エクスプレス は、15 分遅れて運行しております。ニューデリー 駅への到着は 06:25 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        },
+        {
+          "train_id": "t3",
+          "train_name": "Shatabdi Express",
+          "train_number": "12004",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 15,
+          "new_time": "11:40",
+          "text_en": "Attention passengers. Train number 12004, Shatabdi Express, is running late by 15 minutes. It is now expected to arrive at Kanpur Central at 11:40. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12004, शताब्दी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 11:40 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12004, சதாப்தி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 11:40 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12004、シャターブディー・エクスプレス は、15 分遅れて運行しております。カーンプル・セントラル 駅への到着は 11:40 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:29:58"
+        }
+      ]
+    },
+    "rec-inc-c6de4c": {
+      "id": "rec-inc-c6de4c",
+      "entity_type": "incident_report",
+      "status": "active",
+      "created_at": "2026-08-22T12:00:01.523216+00:00",
+      "status_changed_at": "2026-08-22T12:00:01.523216+00:00",
+      "status_changed_by": "system",
+      "reason": "Comprehensive AI incident report generated",
+      "scheduled_purge_at": null,
+      "purged_at": null,
+      "purged_by": null,
+      "content_ref": {
+        "id": "rep-1787400001",
+        "created_at": "2026-08-22T12:00:01.520568+00:00",
+        "content": "## Incident Report: Signal Failure\n**Time:** 2026-08-22 17:30\n**Severity:** Critical\n**Primary Train:** Rajdhani Express (12302)\n**Location:** New Delhi\n**Delay:** 30 minutes\n\n### Financial & Operations Impact\n- **Stranded Passengers:** ~3,000\n- **Estimated Compensation / Loss:** ₹900,000 INR\n\n### Impact Summary\n- Cascading impact on 2 other trains.\n- New schedules generated and synchronized.\n- Station authorities notified."
+      }
+    },
+    "rec-ann-31faa2": {
+      "id": "rec-ann-31faa2",
+      "entity_type": "announcement",
+      "status": "active",
+      "created_at": "2026-08-22T12:10:45.569453+00:00",
+      "status_changed_at": "2026-08-22T12:10:45.569453+00:00",
+      "status_changed_by": "system",
+      "reason": "Automated announcement batch generated during incident processing",
+      "scheduled_purge_at": null,
+      "purged_at": null,
+      "purged_by": null,
+      "content_ref": [
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 30,
+          "new_time": "06:30",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 30 minutes. It is now expected to arrive at New Delhi at 06:30. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 06:30 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 06:30 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、30 分遅れて運行しております。ニューデリー 駅への到着は 06:30 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 30,
+          "new_time": "10:38",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 30 minutes. It is now expected to arrive at Kanpur Central at 10:38. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 10:38 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 10:38 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、30 分遅れて運行しております。カーンプル・セントラル 駅への到着は 10:38 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "PRYJ",
+          "station_name": "Prayagraj Junction",
+          "delay_minutes": 30,
+          "new_time": "12:38",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 30 minutes. It is now expected to arrive at Prayagraj Junction at 12:38. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 12:38 बजे प्रयागराज जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 12:38 மணிக்கு பிரயாக்ராஜ் சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、30 分遅れて運行しております。プラヤグラージ 駅への到着は 12:38 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t1",
+          "train_name": "Vande Bharat Express",
+          "train_number": "22436",
+          "station_code": "BSB",
+          "station_name": "Varanasi Junction",
+          "delay_minutes": 30,
+          "new_time": "14:30",
+          "text_en": "Attention passengers. Train number 22436, Vande Bharat Express, is running late by 30 minutes. It is now expected to arrive at Varanasi Junction at 14:30. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 22436, वंदे भारत एक्सप्रेस, अपने निर्धारित समय से 30 मिनट की देरी से चल रही है। इसके अब 14:30 बजे वाराणसी जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 22436, வந்தே பாரத் எக்ஸ்பிரஸ், 30 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 14:30 மணிக்கு வாரணாசி சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 22436、ヴァンデ・バーラト・エクスプレス は、30 分遅れて運行しております。ヴァーラーナシー 駅への到着は 14:30 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 15,
+          "new_time": "17:05",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at New Delhi at 17:05. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 17:05 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 17:05 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。ニューデリー 駅への到着は 17:05 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 15,
+          "new_time": "21:47",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at Kanpur Central at 21:47. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 21:47 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 21:47 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。カーンプル・セントラル 駅への到着は 21:47 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "PRYJ",
+          "station_name": "Prayagraj Junction",
+          "delay_minutes": 15,
+          "new_time": "23:58",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at Prayagraj Junction at 23:58. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 23:58 बजे प्रयागराज जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 23:58 மணிக்கு பிரயாக்ராஜ் சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。プラヤグラージ 駅への到着は 23:58 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "PNBE",
+          "station_name": "Patna Junction",
+          "delay_minutes": 15,
+          "new_time": "04:15",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at Patna Junction at 04:15. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 04:15 बजे पटना जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 04:15 மணிக்கு பாட்னா சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。パトナ 駅への到着は 04:15 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t2",
+          "train_name": "Rajdhani Express",
+          "train_number": "12302",
+          "station_code": "HWH",
+          "station_name": "Howrah Junction",
+          "delay_minutes": 15,
+          "new_time": "10:10",
+          "text_en": "Attention passengers. Train number 12302, Rajdhani Express, is running late by 15 minutes. It is now expected to arrive at Howrah Junction at 10:10. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12302, राजधानी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 10:10 बजे हावड़ा जंक्शन पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12302, ராஜ்தானி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 10:10 மணிக்கு ஹவுரா சந்திப்பு நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12302、ラージダーニー・エクスプレス は、15 分遅れて運行しております。ハウラー 駅への到着は 10:10 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t3",
+          "train_name": "Shatabdi Express",
+          "train_number": "12004",
+          "station_code": "NDLS",
+          "station_name": "New Delhi",
+          "delay_minutes": 15,
+          "new_time": "06:25",
+          "text_en": "Attention passengers. Train number 12004, Shatabdi Express, is running late by 15 minutes. It is now expected to arrive at New Delhi at 06:25. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12004, शताब्दी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 06:25 बजे नई दिल्ली पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12004, சதாப்தி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 06:25 மணிக்கு புது தில்லி நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12004、シャターブディー・エクスプレス は、15 分遅れて運行しております。ニューデリー 駅への到着は 06:25 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        },
+        {
+          "train_id": "t3",
+          "train_name": "Shatabdi Express",
+          "train_number": "12004",
+          "station_code": "CNB",
+          "station_name": "Kanpur Central",
+          "delay_minutes": 15,
+          "new_time": "11:40",
+          "text_en": "Attention passengers. Train number 12004, Shatabdi Express, is running late by 15 minutes. It is now expected to arrive at Kanpur Central at 11:40. We deeply regret the inconvenience caused.",
+          "text_hi": "कृपया ध्यान दें। गाड़ी संख्या 12004, शताब्दी एक्सप्रेस, अपने निर्धारित समय से 15 मिनट की देरी से चल रही है। इसके अब 11:40 बजे कानपुर सेंट्रल पहुँचने की संभावना है। आपको हुई असुविधा के लिए हमें खेद है।",
+          "text_ta": "பயணிகளின் கவனத்திற்கு. வண்டி எண் 12004, சதாப்தி எக்ஸ்பிரஸ், 15 நிமிடங்கள் தாமதமாக இயங்குகிறது. இது இப்போது 11:40 மணிக்கு கான்பூர் சென்ட்ரல் நிலையத்திற்கு வந்து சேரும் என எதிர்பார்க்கப்படுகிறது. உங்களுக்கு ஏற்பட்ட அசௌகரியத்திற்கு வருந்துகிறோம்.",
+          "text_ja": "乗客の皆様にご案内いたします。列車番号 12004、シャターブディー・エクスプレス は、15 分遅れて運行しております。カーンプル・セントラル 駅への到着は 11:40 頃になる見込みです。ご不便をおかけして大変申し訳ございません。",
+          "severity": "Critical",
+          "timestamp": "2026-08-22 17:40:44"
+        }
+      ]
+    },
+    "rec-inc-b20fda": {
+      "id": "rec-inc-b20fda",
+      "entity_type": "incident_report",
+      "status": "active",
+      "created_at": "2026-08-22T12:10:47.108428+00:00",
+      "status_changed_at": "2026-08-22T12:10:47.108428+00:00",
+      "status_changed_by": "system",
+      "reason": "Comprehensive AI incident report generated",
+      "scheduled_purge_at": null,
+      "purged_at": null,
+      "purged_by": null,
+      "content_ref": {
+        "id": "rep-1787400647",
+        "created_at": "2026-08-22T12:10:47.104394+00:00",
+        "content": "## Incident Report: Signal Failure\n**Time:** 2026-08-22 17:40\n**Severity:** Critical\n**Primary Train:** Vande Bharat Express (22436)\n**Location:** New Delhi\n**Delay:** 30 minutes\n\n### Financial & Operations Impact\n- **Stranded Passengers:** ~3,000\n- **Estimated Compensation / Loss:** ₹900,000 INR\n\n### Impact Summary\n- Cascading impact on 2 other trains.\n- New schedules generated and synchronized.\n- Station authorities notified."
       }
     }
   },
   "audit_trails": {
     "rec-ann-101": [
       {
-        "id": "1ecef553-5d5c-4eda-a575-7fa225c9387f",
+        "id": "3dbebadd-45be-4167-a0da-680565ea6d1d",
         "record_id": "rec-ann-101",
         "action": "create",
         "previous_status": null,
@@ -157,29 +674,39 @@
         "timestamp": "2026-08-20T10:00:00Z"
       },
       {
-        "id": "7eaee0a1-8ebd-45d8-895d-e91b637a6f89",
+        "id": "713edbd3-7c3f-4063-abc0-add3b39b19b7",
         "record_id": "rec-ann-101",
         "action": "transition_archived",
         "previous_status": "active",
         "new_status": "archived",
         "performed_by": "station_master",
-        "reason": "Test archive by station master",
-        "timestamp": "2026-08-22T12:09:55.465755+00:00"
+        "reason": "Station master archiving",
+        "timestamp": "2026-08-22T11:23:50.508503+00:00"
       },
       {
-        "id": "e7db3d47-2997-4d6e-be08-95e9f7e083e7",
+        "id": "bdfee296-a23e-46c3-885c-f74409684c43",
         "record_id": "rec-ann-101",
         "action": "transition_pending_deletion",
         "previous_status": "archived",
         "new_status": "pending_deletion",
         "performed_by": "station_master",
-        "reason": "Request delete for announcement",
-        "timestamp": "2026-08-22T12:09:55.483429+00:00"
+        "reason": "Schedule deletion test",
+        "timestamp": "2026-08-22T11:23:50.514599+00:00"
+      },
+      {
+        "id": "b9bf95ec-21d8-4cad-ad05-889d2641a14d",
+        "record_id": "rec-ann-101",
+        "action": "transition_active",
+        "previous_status": "pending_deletion",
+        "new_status": "active",
+        "performed_by": "controller",
+        "reason": "Restored to active status",
+        "timestamp": "2026-08-22T11:32:33.998050+00:00"
       }
     ],
     "rec-rep-202": [
       {
-        "id": "c70665fb-8f1d-4a3d-b37c-4e4f4ad933b5",
+        "id": "114c2f1e-c55f-43f4-80c6-f34b3f3be2f2",
         "record_id": "rec-rep-202",
         "action": "create",
         "previous_status": null,
@@ -189,7 +716,7 @@
         "timestamp": "2026-08-15T14:30:00Z"
       },
       {
-        "id": "9c0bd4a3-3105-471c-be09-b751add91ecd",
+        "id": "741dbd2a-13b5-489e-b989-585228f331a0",
         "record_id": "rec-rep-202",
         "action": "archived",
         "previous_status": "active",
@@ -197,11 +724,21 @@
         "performed_by": "station_master",
         "reason": "Incident investigation completed; archived for compliance",
         "timestamp": "2026-08-18T09:15:00Z"
+      },
+      {
+        "id": "eb6fe73b-5cb2-4fc1-ba9a-02950382c504",
+        "record_id": "rec-rep-202",
+        "action": "transition_active",
+        "previous_status": "archived",
+        "new_status": "active",
+        "performed_by": "controller",
+        "reason": "Restored to active status",
+        "timestamp": "2026-08-22T11:35:58.300282+00:00"
       }
     ],
     "rec-tel-303": [
       {
-        "id": "a9f08ffe-b4b6-4102-898c-aa7a9831e2f2",
+        "id": "082a1e0a-144f-4b78-bc53-0f05711ead35",
         "record_id": "rec-tel-303",
         "action": "create",
         "previous_status": null,
@@ -211,7 +748,7 @@
         "timestamp": "2026-07-01T00:00:00Z"
       },
       {
-        "id": "544f3f83-2804-4eed-998a-7468cda6441c",
+        "id": "4304cb5a-3afe-4f29-a316-a88808e943e0",
         "record_id": "rec-tel-303",
         "action": "pending_deletion",
         "previous_status": "active",
@@ -221,19 +758,19 @@
         "timestamp": "2026-08-21T08:00:00Z"
       },
       {
-        "id": "0d1d1932-e616-4381-964b-f74330c7cd6b",
+        "id": "575c11f5-c654-4fb3-9132-29c8f80a088f",
         "record_id": "rec-tel-303",
         "action": "transition_deleted",
         "previous_status": "pending_deletion",
         "new_status": "deleted",
         "performed_by": "controller",
-        "reason": "Controller confirmed deletion",
-        "timestamp": "2026-08-22T12:09:55.477899+00:00"
+        "reason": "Permanent deletion approved by controller",
+        "timestamp": "2026-08-22T11:23:50.522298+00:00"
       }
     ],
     "rec-cctv-404": [
       {
-        "id": "c4f8dc55-59cf-4006-b429-7000765aeca8",
+        "id": "3ef3a7fd-1326-4f5e-a293-fde8010a2b83",
         "record_id": "rec-cctv-404",
         "action": "create",
         "previous_status": null,
@@ -243,7 +780,7 @@
         "timestamp": "2026-06-10T11:20:00Z"
       },
       {
-        "id": "f4e65d00-08e2-49b8-8a5f-6abee9fc8661",
+        "id": "ab3dec75-b55c-48f3-a5c1-6a034ef322b7",
         "record_id": "rec-cctv-404",
         "action": "deleted",
         "previous_status": "active",
@@ -255,7 +792,7 @@
     ],
     "rec-sched-505": [
       {
-        "id": "6050fbae-6d8d-4dee-a7da-22f411cbbd93",
+        "id": "c2c05cdb-df69-4df6-96e5-3a3eb073fa9a",
         "record_id": "rec-sched-505",
         "action": "create",
         "previous_status": null,
@@ -265,164 +802,76 @@
         "timestamp": "2026-08-22T06:00:00Z"
       }
     ],
-    "rec-ann-584eb7": [
+    "rec-ann-96aec8": [
       {
-        "id": "5654bfbf-1057-410c-b257-fa725eda00c3",
-        "record_id": "rec-ann-584eb7",
-        "action": "create",
-        "previous_status": null,
-        "new_status": "active",
-        "performed_by": "station_master",
-        "reason": "Manual creation",
-        "timestamp": "2026-08-22T12:09:55.431934+00:00"
-      }
-    ],
-    "rec-tra-5aab7c": [
-      {
-        "id": "c92b44ca-503d-4cd6-a8e9-78f3d06eaff6",
-        "record_id": "rec-tra-5aab7c",
+        "id": "5c256752-e4ef-4cc9-b8bb-fec9da61ea00",
+        "record_id": "rec-ann-96aec8",
         "action": "create",
         "previous_status": null,
         "new_status": "active",
         "performed_by": "system",
-        "reason": "Created new train_schedule retention record",
-        "timestamp": "2026-08-22T12:09:55.433215+00:00"
-      },
-      {
-        "id": "db9f434c-a1c3-4ddb-b718-2de3f1af19dd",
-        "record_id": "rec-tra-5aab7c",
-        "action": "transition_archived",
-        "previous_status": "active",
-        "new_status": "archived",
-        "performed_by": "station_master",
-        "reason": "Archiving",
-        "timestamp": "2026-08-22T12:09:55.434767+00:00"
-      },
-      {
-        "id": "2c473074-f381-43f7-a4ed-0944b50e84ed",
-        "record_id": "rec-tra-5aab7c",
-        "action": "transition_active",
-        "previous_status": "archived",
-        "new_status": "active",
-        "performed_by": "station_master",
-        "reason": "Restoring",
-        "timestamp": "2026-08-22T12:09:55.436110+00:00"
-      },
-      {
-        "id": "3ecfe3d5-e646-4ec4-91aa-583f7b4516c3",
-        "record_id": "rec-tra-5aab7c",
-        "action": "transition_pending_deletion",
-        "previous_status": "active",
-        "new_status": "pending_deletion",
-        "performed_by": "station_master",
-        "reason": "Pending deletion",
-        "timestamp": "2026-08-22T12:09:55.437755+00:00"
-      },
-      {
-        "id": "8ca89db6-b0ef-4576-b68f-a1fa77342534",
-        "record_id": "rec-tra-5aab7c",
-        "action": "transition_active",
-        "previous_status": "pending_deletion",
-        "new_status": "active",
-        "performed_by": "station_master",
-        "reason": "Cancelled",
-        "timestamp": "2026-08-22T12:09:55.438739+00:00"
-      },
-      {
-        "id": "c09274bd-9183-47ff-8d2a-3ac555a1bb39",
-        "record_id": "rec-tra-5aab7c",
-        "action": "transition_pending_deletion",
-        "previous_status": "active",
-        "new_status": "pending_deletion",
-        "performed_by": "station_master",
-        "reason": "Queue for deletion",
-        "timestamp": "2026-08-22T12:09:55.439803+00:00"
-      },
-      {
-        "id": "8400aab0-db89-4a89-ac37-592fda9a1fb0",
-        "record_id": "rec-tra-5aab7c",
-        "action": "transition_deleted",
-        "previous_status": "pending_deletion",
-        "new_status": "deleted",
-        "performed_by": "controller",
-        "reason": "Purge executed",
-        "timestamp": "2026-08-22T12:09:55.441904+00:00"
+        "reason": "Automated announcement batch generated during incident processing",
+        "timestamp": "2026-08-22T11:34:41.410989+00:00"
       }
     ],
-    "rec-cct-217aac": [
+    "rec-inc-6b7c80": [
       {
-        "id": "b3444f28-fd2d-46b1-a573-ce856c0ab2b4",
-        "record_id": "rec-cct-217aac",
+        "id": "c4037e56-2c3d-4668-914a-e822d956d7f4",
+        "record_id": "rec-inc-6b7c80",
         "action": "create",
         "previous_status": null,
         "new_status": "active",
         "performed_by": "system",
-        "reason": "Created new cctv_log retention record",
-        "timestamp": "2026-08-22T12:09:55.442864+00:00"
-      },
-      {
-        "id": "81bc04a1-84fe-4bf9-a316-d63ad60c0dfc",
-        "record_id": "rec-cct-217aac",
-        "action": "transition_pending_deletion",
-        "previous_status": "active",
-        "new_status": "pending_deletion",
-        "performed_by": "station_master",
-        "reason": null,
-        "timestamp": "2026-08-22T12:09:55.444136+00:00"
+        "reason": "Comprehensive AI incident report generated",
+        "timestamp": "2026-08-22T11:34:42.934320+00:00"
       }
     ],
-    "rec-inc-fe1b0a": [
+    "rec-ann-67248a": [
       {
-        "id": "09a2ba2b-2f54-43ef-9d98-d0dc9dc45a96",
-        "record_id": "rec-inc-fe1b0a",
+        "id": "b194969a-9d27-42b3-948a-fa159c83a89a",
+        "record_id": "rec-ann-67248a",
         "action": "create",
         "previous_status": null,
         "new_status": "active",
         "performed_by": "system",
-        "reason": "Created new incident_report retention record",
-        "timestamp": "2026-08-22T12:09:55.445451+00:00"
+        "reason": "Automated announcement batch generated during incident processing",
+        "timestamp": "2026-08-22T11:59:59.994054+00:00"
       }
     ],
-    "rec-sig-20742f": [
+    "rec-inc-c6de4c": [
       {
-        "id": "64f97d5a-c0b5-4c33-bbf1-55d2a379e660",
-        "record_id": "rec-sig-20742f",
+        "id": "f36a6afa-ce20-4091-83c2-26b3a11fd479",
+        "record_id": "rec-inc-c6de4c",
         "action": "create",
         "previous_status": null,
         "new_status": "active",
         "performed_by": "system",
-        "reason": "Created new signal_telemetry retention record",
-        "timestamp": "2026-08-22T12:09:55.489711+00:00"
-      },
+        "reason": "Comprehensive AI incident report generated",
+        "timestamp": "2026-08-22T12:00:01.523216+00:00"
+      }
+    ],
+    "rec-ann-31faa2": [
       {
-        "id": "5493818d-1a68-4743-9f5c-77cf0c04b52b",
-        "record_id": "rec-sig-20742f",
-        "action": "transition_archived",
-        "previous_status": "active",
-        "new_status": "archived",
-        "performed_by": "station_master",
-        "reason": "Step 1: Archive",
-        "timestamp": "2026-08-22T12:09:55.494177+00:00"
-      },
-      {
-        "id": "41656e0b-9886-450b-98b8-969cd8a65faa",
-        "record_id": "rec-sig-20742f",
-        "action": "transition_pending_deletion",
-        "previous_status": "archived",
-        "new_status": "pending_deletion",
-        "performed_by": "station_master",
-        "reason": "Step 2: Request Delete",
-        "timestamp": "2026-08-22T12:09:55.501465+00:00"
-      },
-      {
-        "id": "e146b64b-b644-409b-892d-2f770a0f1b00",
-        "record_id": "rec-sig-20742f",
-        "action": "transition_active",
-        "previous_status": "pending_deletion",
+        "id": "dc3cc046-8375-4459-8b60-c0f71a77674f",
+        "record_id": "rec-ann-31faa2",
+        "action": "create",
+        "previous_status": null,
         "new_status": "active",
-        "performed_by": "station_master",
-        "reason": "Step 3: Restore to active",
-        "timestamp": "2026-08-22T12:09:55.509126+00:00"
+        "performed_by": "system",
+        "reason": "Automated announcement batch generated during incident processing",
+        "timestamp": "2026-08-22T12:10:45.569453+00:00"
+      }
+    ],
+    "rec-inc-b20fda": [
+      {
+        "id": "6f23b6d0-270a-4ea0-b051-4819364c5ec0",
+        "record_id": "rec-inc-b20fda",
+        "action": "create",
+        "previous_status": null,
+        "new_status": "active",
+        "performed_by": "system",
+        "reason": "Comprehensive AI incident report generated",
+        "timestamp": "2026-08-22T12:10:47.108428+00:00"
       }
     ]
   }
