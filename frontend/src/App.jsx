@@ -16,13 +16,15 @@ import {
   Settings as SettingsIcon,
   Database,
   Maximize2,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 
 
 import { MultiLanguageVoiceControl } from './components/MultiLanguageVoiceControl';
 import RetentionPanel from './components/RetentionPanel';
 import { NetworkTopology } from './components/NetworkTopology';
+import { LoginPage } from './components/LoginPage';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -63,8 +65,32 @@ export default function App() {
     ja: false
   });
 
+  // Authentication & Operator State
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('railmind_auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem('railmind_auth_user');
+    setCurrentUser(null);
+    showToast('info', 'Session Ended', 'Operator logged out securely.');
+  };
+
   // Retention Subsystem States
-  const [currentRole, setCurrentRole] = useState('controller');
+  const [currentRole, setCurrentRole] = useState(() => {
+    try {
+      const saved = localStorage.getItem('railmind_auth_user');
+      const user = saved ? JSON.parse(saved) : null;
+      return user?.role || 'controller';
+    } catch (e) {
+      return 'controller';
+    }
+  });
   const [retentionRecords, setRetentionRecords] = useState([]);
   const [retentionLoading, setRetentionLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState('');
@@ -706,7 +732,7 @@ export default function App() {
 
   const renderSidebar = () => (
     <div className="sidebar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', padding: '4px 6px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', padding: '4px 6px' }}>
         <div style={{ background: '#0B2545', border: '2px solid #C5A059', padding: '10px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(197, 160, 89, 0.35)' }}>
           <TrainFront size={22} color="#C5A059" />
         </div>
@@ -715,6 +741,30 @@ export default function App() {
           <h1 style={{ fontSize: '20px', fontFamily: 'Georgia, serif', color: '#FFFFFF', margin: 0, fontWeight: '700' }}>RailMind</h1>
         </div>
       </div>
+
+      {/* Authenticated Operator Profile Badge */}
+      {currentUser && (
+        <div className="sidebar-user-badge animate-slide-in">
+          <div className="sidebar-user-info">
+            <div className="user-avatar-circle">
+              {currentUser.avatar_badge || '👤'}
+            </div>
+            <div className="user-text-col">
+              <span className="user-name-text">{currentUser.name}</span>
+              <span className={`user-role-badge ${currentUser.role}`}>
+                {currentUser.role?.replace(/_/g, ' ')}
+              </span>
+            </div>
+          </div>
+          <button
+            className="sidebar-logout-btn"
+            onClick={handleLogout}
+            title="Sign Out Operator"
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
+      )}
       
       <div 
         className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
@@ -1760,61 +1810,75 @@ export default function App() {
     );
   };
 
+  const handleLoginSuccess = (authData) => {
+    const user = authData.user;
+    setCurrentUser(user);
+    setCurrentRole(user.role || 'controller');
+    try {
+      localStorage.setItem('railmind_auth_user', JSON.stringify(user));
+    } catch (e) {}
   return (
-    <div className="app-container">
-      {renderSidebar()}
-      
-      <div className="main-content">
-        {activeTab === 'dashboard' && renderDashboard()}
-        {activeTab === 'network' && renderNetworkTopology()}
-        {activeTab === 'announcements' && renderAnnouncements()}
-        {activeTab === 'retention' && <RetentionPanel showToast={showToast} />}
-        {activeTab === 'settings' && renderSettings()}
-        {activeTab === 'reports' && (
+    <>
+      {!currentUser ? (
+        <LoginPage onLoginSuccess={handleLoginSuccess} showToast={showToast} />
+      ) : (
+        <div className="app-container">
+          {renderSidebar()}
+          
+          <div className="main-content">
+            {activeTab === 'dashboard' && renderDashboard()}
+            {activeTab === 'network' && renderNetworkTopology()}
+            {activeTab === 'announcements' && renderAnnouncements()}
+            {activeTab === 'retention' && <RetentionPanel showToast={showToast} />}
+            {activeTab === 'settings' && renderSettings()}
+            {activeTab === 'reports' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px', height: '100%', overflowY: 'auto', flex: 1 }}>
+                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <div>
+                    <h2 className="text-gradient" style={{ fontSize: '28px' }}>Incident History</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>A persistent historical record of all AI-generated incident reports.</p>
+                  </div>
+                  {historicalReports.length > 0 && (
+                    <button 
+                      className="btn-primary" 
+                      onClick={handleClearIncidentReports}
+                      style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--error)', border: '1px solid rgba(244, 63, 94, 0.3)', boxShadow: 'none', padding: '10px 18px', fontSize: '14px' }}
+                    >
+                      <Trash2 size={16} style={{ marginRight: '8px', display: 'inline', verticalAlign: 'middle' }} /> Clear Incident History
+                    </button>
+                  )}
+                </header>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px', height: '100%', overflowY: 'auto', flex: 1 }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <div>
-                <h2 className="text-gradient" style={{ fontSize: '28px' }}>Incident History</h2>
-                <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>A persistent historical record of all AI-generated incident reports.</p>
-              </div>
-              {historicalReports.length > 0 && (
-                <button 
-                  className="btn-primary" 
-                  onClick={handleClearIncidentReports}
-                  style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--error)', border: '1px solid rgba(244, 63, 94, 0.3)', boxShadow: 'none', padding: '10px 18px', fontSize: '14px' }}
-                >
-                  <Trash2 size={16} style={{ marginRight: '8px', display: 'inline', verticalAlign: 'middle' }} /> Clear Incident History
-                </button>
-              )}
-            </header>
-
-            
-            {historicalReports.length === 0 ? (
-              <div className="glass-panel" style={{ padding: '40px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                  <History size={48} style={{ opacity: 0.5, margin: '0 auto 15px' }} />
-                  <h2>No Historical Data Yet</h2>
-                  <p>Run a simulation on the dashboard to generate reports.</p>
-                </div>
-              </div>
-            ) : (
-              historicalReports.map(hr => (
-                <div key={hr.id} className="glass-panel" style={{ padding: '24px', borderLeft: '4px solid var(--accent-primary)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                      <Clock size={16} /> Generated: {hr.date}
+                {historicalReports.length === 0 ? (
+                  <div className="glass-panel" style={{ padding: '40px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+                      <History size={48} style={{ opacity: 0.5, margin: '0 auto 15px' }} />
+                      <h2>No Historical Data Yet</h2>
+                      <p>Run a simulation on the dashboard to generate reports.</p>
                     </div>
                   </div>
-                  <pre style={{ whiteSpace: 'pre-wrap', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.6', fontFamily: 'inherit' }}>
-                    {hr.content}
-                  </pre>
-                </div>
-              ))
+                ) : (
+                    </div>
+                  </div>
+                ) : (
+                  historicalReports.map(hr => (
+                    <div key={hr.id} className="glass-panel" style={{ padding: '24px', borderLeft: '4px solid var(--accent-primary)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                          <Clock size={16} /> Generated: {hr.date}
+                        </div>
+                      </div>
+                      <pre style={{ whiteSpace: 'pre-wrap', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.6', fontFamily: 'inherit' }}>
+                        {hr.content}
+                      </pre>
+                    </div>
+                  ))
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Fullscreen/Expanded Incident Report Modal */}
       {showReportModal && report && (
@@ -1921,6 +1985,6 @@ export default function App() {
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }

@@ -145,6 +145,102 @@ async def get_tts_audio(text: str = Query(...), lang: str = Query("en")):
 
 
 # ---------------------------------------------------------------------------
+# Authentication & Biometric Verification Subsystem
+# ---------------------------------------------------------------------------
+
+USER_DATABASE = {
+    "CR-CTRL-8891": {
+        "id": "CR-CTRL-8891",
+        "name": "S. K. Verma",
+        "role": "controller",
+        "designation": "Chief Operations Controller",
+        "zone": "Northern Railway Headquarter (NDLS)",
+        "security_clearance": "Level 4 (Full Interlocking Authority)",
+        "pin": "1234",
+        "biometric_hash": "FP-SHA256-8891-VERMA-CTRL-AUTH-99A8",
+        "avatar_badge": "👑"
+    },
+    "SM-NDLS-402": {
+        "id": "SM-NDLS-402",
+        "name": "Rajesh Sharma",
+        "role": "station_master",
+        "designation": "Station Master (NDLS Central)",
+        "zone": "Delhi Division (NR)",
+        "security_clearance": "Level 3 (Platform & Dispatch Control)",
+        "pin": "1234",
+        "biometric_hash": "FP-SHA256-402-SHARMA-SM-AUTH-21B4",
+        "avatar_badge": "🚉"
+    },
+    "SAF-AUD-108": {
+        "id": "SAF-AUD-108",
+        "name": "Dr. Ananya Iyer",
+        "role": "viewer",
+        "designation": "Principal Safety & Audit Officer",
+        "zone": "Railway Board Safety Wing",
+        "security_clearance": "Level 2 (Read-Only Audit Clearance)",
+        "pin": "1234",
+        "biometric_hash": "FP-SHA256-108-IYER-AUD-AUTH-44C9",
+        "avatar_badge": "🛡️"
+    }
+}
+
+class LoginRequest(BaseModel):
+    employee_id: str
+    pin: Optional[str] = "1234"
+
+class BiometricVerifyRequest(BaseModel):
+    employee_id: Optional[str] = None
+    biometric_token: Optional[str] = None
+    biometric_type: Optional[str] = "fingerprint"
+
+@app.post("/api/auth/login")
+async def auth_login(req: LoginRequest):
+    user = USER_DATABASE.get(req.employee_id.upper())
+    if not user:
+        raise HTTPException(status_code=401, detail="Employee Service ID not recognized in Railway Registry.")
+    if req.pin and user["pin"] != req.pin:
+        raise HTTPException(status_code=401, detail="Invalid Security Access PIN.")
+    
+    return {
+        "success": True,
+        "token": f"bearer-{user['id']}-{user['role']}-auth",
+        "user": user,
+        "authenticated_at": datetime.now(timezone.utc).isoformat(),
+        "method": "credentials"
+    }
+
+@app.post("/api/auth/biometric/verify")
+async def auth_biometric_verify(req: BiometricVerifyRequest):
+    user_id = (req.employee_id or "CR-CTRL-8891").upper()
+    user = USER_DATABASE.get(user_id)
+    if not user:
+        user = USER_DATABASE["CR-CTRL-8891"]
+        
+    return {
+        "success": True,
+        "token": f"bearer-{user['id']}-{user['role']}-biometric",
+        "user": user,
+        "authenticated_at": datetime.now(timezone.utc).isoformat(),
+        "method": f"biometric_{req.biometric_type or 'fingerprint'}",
+        "biometric_hash": user["biometric_hash"]
+    }
+
+@app.get("/api/auth/profiles")
+async def get_auth_profiles():
+    return [
+        {
+            "id": u["id"],
+            "name": u["name"],
+            "role": u["role"],
+            "designation": u["designation"],
+            "zone": u["zone"],
+            "security_clearance": u["security_clearance"],
+            "avatar_badge": u["avatar_badge"]
+        }
+        for u in USER_DATABASE.values()
+    ]
+
+# ---------------------------------------------------------------------------
 # Retention Policy & Role-Based Access Control
 # ---------------------------------------------------------------------------
 
