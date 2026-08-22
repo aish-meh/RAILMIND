@@ -1251,6 +1251,139 @@ input:checked + .slider:before {
   to { transform: rotate(360deg); }
 }
 
+/* ══════════════════════════════════════════════════════════
+   COUNTDOWN CONFIRMATION MODAL
+   ══════════════════════════════════════════════════════════ */
+
+.countdown-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeInOverlay 0.2s ease;
+}
+
+.countdown-modal-content {
+  background: #FFFFFF;
+  border-radius: 16px;
+  width: 440px;
+  max-width: 90vw;
+  padding: 28px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(220, 38, 38, 0.15);
+  animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   AUDIT CHAIN DRAWER
+   ══════════════════════════════════════════════════════════ */
+
+.audit-drawer-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1050;
+  animation: fadeInOverlay 0.2s ease;
+}
+
+.audit-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 480px;
+  max-width: 90vw;
+  height: 100vh;
+  background: #FFFFFF;
+  border-left: 1px solid #E2E8F0;
+  box-shadow: -10px 0 40px rgba(15, 23, 42, 0.1);
+  z-index: 1060;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  animation: slideInFromRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow: hidden;
+}
+
+@keyframes slideInFromRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Chain Visualization ── */
+
+.audit-chain-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.audit-chain-node {
+  display: flex;
+  gap: 16px;
+  min-height: 0;
+}
+
+.audit-chain-icon-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.audit-chain-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F8FAFC;
+  flex-shrink: 0;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.audit-chain-line {
+  width: 2px;
+  flex: 1;
+  min-height: 12px;
+  background: #CBD5E1;
+  transition: background 0.3s ease;
+}
+
+.audit-chain-event {
+  flex: 1;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.audit-chain-event:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+/* ── Spin animation for verify loading ── */
+
+@keyframes auditSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
 .pulse-red {
   color: var(--error);
   animation: pulseError 1.5s infinite;

@@ -271,7 +271,7 @@ def require_role(min_role: str):
     return dependency
 
 from fastapi import APIRouter, Depends
-from retention import create_record, parse_iso_datetime
+from retention import create_record, parse_iso_datetime, verify_chain, _seed_initial_data
 from datetime import datetime, timezone
 
 retention_router = APIRouter(prefix="/api/retention", tags=["retention"])
@@ -293,6 +293,23 @@ async def get_retention_audit_trail(
     if not record:
         raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
     return retention_store.get_audit_trail(record_id)
+
+@retention_router.get("/verify-integrity/{record_id}")
+async def verify_retention_integrity(
+    record_id: str,
+    role: str = Depends(require_role("viewer"))
+):
+    record = retention_store.get_record(record_id)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
+    return verify_chain(record_id)
+
+@retention_router.post("/demo-reset")
+async def demo_reset(
+    role: str = Depends(require_role("controller"))
+):
+    _seed_initial_data()
+    return {"status": "ok", "message": "Retention store re-seeded for demo"}
 
 @retention_router.post("/archive/{record_id}", response_model=RetentionRecord)
 async def archive_retention_record(
@@ -383,6 +400,13 @@ async def approve_delete_retention_record(
 
     purge_dt = parse_iso_datetime(record.scheduled_purge_at)
     if datetime.now(timezone.utc) < purge_dt:
+        await manager.broadcast(json.dumps({
+            "type": "confirmation_state_change",
+            "action_type": "purge_record",
+            "record_id": record_id,
+            "status": "blocked",
+            "detail": f"Cooling-off period not passed: {record.scheduled_purge_at}"
+        }))
         raise HTTPException(
             status_code=400,
             detail=f"Cannot delete record '{record_id}': scheduled_purge_at ({record.scheduled_purge_at}) has not passed yet."
@@ -398,6 +422,13 @@ async def approve_delete_retention_record(
             reason=reason,
             purged=True
         )
+        await manager.broadcast(json.dumps({
+            "type": "confirmation_state_change",
+            "action_type": "purge_record",
+            "record_id": record_id,
+            "status": "confirmed",
+            "new_record_status": updated.status.value if hasattr(updated.status, 'value') else updated.status
+        }))
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
