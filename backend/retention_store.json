@@ -5,10 +5,10 @@
       "entity_type": "announcement",
       "status": "pending_deletion",
       "created_at": "2026-08-20T10:00:00Z",
-      "status_changed_at": "2026-08-22T11:23:50.514599+00:00",
+      "status_changed_at": "2026-08-22T11:30:35.955565+00:00",
       "status_changed_by": "station_master",
       "reason": "Schedule deletion test",
-      "scheduled_purge_at": "2026-09-21T11:23:50.514562+00:00",
+      "scheduled_purge_at": "2026-09-21T11:30:35.955474+00:00",
       "purged_at": null,
       "purged_by": null,
       "content_ref": {
@@ -36,11 +36,11 @@
       "entity_type": "signal_telemetry",
       "status": "deleted",
       "created_at": "2026-07-01T00:00:00Z",
-      "status_changed_at": "2026-08-22T11:23:50.522298+00:00",
+      "status_changed_at": "2026-08-22T11:30:35.978305+00:00",
       "status_changed_by": "controller",
       "reason": "Permanent deletion approved by controller",
       "scheduled_purge_at": "2026-08-21T08:00:00Z",
-      "purged_at": "2026-08-22T11:23:50.522298+00:00",
+      "purged_at": "2026-08-22T11:30:35.978305+00:00",
       "purged_by": "controller",
       "content_ref": null
     },
@@ -76,7 +76,7 @@
   "audit_trails": {
     "rec-ann-101": [
       {
-        "id": "3dbebadd-45be-4167-a0da-680565ea6d1d",
+        "id": "cf10d38c-a9d9-47ad-ba0e-4cce91fbcfc0",
         "record_id": "rec-ann-101",
         "action": "create",
         "previous_status": null,
@@ -86,29 +86,29 @@
         "timestamp": "2026-08-20T10:00:00Z"
       },
       {
-        "id": "713edbd3-7c3f-4063-abc0-add3b39b19b7",
+        "id": "6e71c820-c39a-459a-9746-ef01ad3c4192",
         "record_id": "rec-ann-101",
         "action": "transition_archived",
         "previous_status": "active",
         "new_status": "archived",
         "performed_by": "station_master",
         "reason": "Station master archiving",
-        "timestamp": "2026-08-22T11:23:50.508503+00:00"
+        "timestamp": "2026-08-22T11:30:35.942357+00:00"
       },
       {
-        "id": "bdfee296-a23e-46c3-885c-f74409684c43",
+        "id": "738dcb02-2151-4bef-8fce-f50e8fa8855f",
         "record_id": "rec-ann-101",
         "action": "transition_pending_deletion",
         "previous_status": "archived",
         "new_status": "pending_deletion",
         "performed_by": "station_master",
         "reason": "Schedule deletion test",
-        "timestamp": "2026-08-22T11:23:50.514599+00:00"
+        "timestamp": "2026-08-22T11:30:35.955565+00:00"
       }
     ],
     "rec-rep-202": [
       {
-        "id": "114c2f1e-c55f-43f4-80c6-f34b3f3be2f2",
+        "id": "d12dd0bc-0580-4b1a-84a8-0eaa36fa7c8a",
         "record_id": "rec-rep-202",
         "action": "create",
         "previous_status": null,
@@ -118,7 +118,7 @@
         "timestamp": "2026-08-15T14:30:00Z"
       },
       {
-        "id": "741dbd2a-13b5-489e-b989-585228f331a0",
+        "id": "112b6f09-fb73-4d57-a470-8ff27ec73be8",
         "record_id": "rec-rep-202",
         "action": "archived",
         "previous_status": "active",
@@ -130,7 +130,7 @@
     ],
     "rec-tel-303": [
       {
-        "id": "082a1e0a-144f-4b78-bc53-0f05711ead35",
+        "id": "a4022114-00c3-4398-9805-fd5cdf8d7a25",
         "record_id": "rec-tel-303",
         "action": "create",
         "previous_status": null,
@@ -140,7 +140,7 @@
         "timestamp": "2026-07-01T00:00:00Z"
       },
       {
-        "id": "4304cb5a-3afe-4f29-a316-a88808e943e0",
+        "id": "9a81e075-9947-4301-9e31-0a81d2c959e7",
         "record_id": "rec-tel-303",
         "action": "pending_deletion",
         "previous_status": "active",
@@ -150,19 +150,19 @@
         "timestamp": "2026-08-21T08:00:00Z"
       },
       {
-        "id": "575c11f5-c654-4fb3-9132-29c8f80a088f",
+        "id": "e1918933-56b1-4443-8c20-b9bf434163a8",
         "record_id": "rec-tel-303",
         "action": "transition_deleted",
         "previous_status": "pending_deletion",
         "new_status": "deleted",
         "performed_by": "controller",
         "reason": "Permanent deletion approved by controller",
-        "timestamp": "2026-08-22T11:23:50.522298+00:00"
+        "timestamp": "2026-08-22T11:30:35.978305+00:00"
       }
     ],
     "rec-cctv-404": [
       {
-        "id": "3ef3a7fd-1326-4f5e-a293-fde8010a2b83",
+        "id": "ee640fc2-18f4-41dc-b842-94a75a4081e5",
         "record_id": "rec-cctv-404",
         "action": "create",
         "previous_status": null,
@@ -172,7 +172,7 @@
         "timestamp": "2026-06-10T11:20:00Z"
       },
       {
-        "id": "ab3dec75-b55c-48f3-a5c1-6a034ef322b7",
+        "id": "c4093727-875d-42b5-a96a-cad5054afa2c",
         "record_id": "rec-cctv-404",
         "action": "deleted",
         "previous_status": "active",
@@ -184,7 +184,7 @@
     ],
     "rec-sched-505": [
       {
-        "id": "c2c05cdb-df69-4df6-96e5-3a3eb073fa9a",
+        "id": "d58fa94a-86a7-4925-a23b-611b047ab4e4",
         "record_id": "rec-sched-505",
         "action": "create",
         "previous_status": null,

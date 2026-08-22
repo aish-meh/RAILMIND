@@ -22,10 +22,10 @@ import {
   Mic 
 } from 'lucide-react';
 
-// Default mock data shape as required for initial frontend rendering
+// Default mock data shape aligned with backend store schema
 const INITIAL_MOCK_RECORDS = [
   {
-    id: "REC-1001",
+    id: "rec-sched-505",
     entity_type: "train_log",
     status: "active",
     created_at: new Date(Date.now() - 45 * 86400000).toISOString(),
@@ -39,13 +39,13 @@ const INITIAL_MOCK_RECORDS = [
     score_label: "High Priority"
   },
   {
-    id: "REC-1002",
-    entity_type: "announcement",
+    id: "rec-rep-202",
+    entity_type: "incident_report",
     status: "archived",
     created_at: new Date(Date.now() - 90 * 86400000).toISOString(),
     status_changed_at: new Date(Date.now() - 12 * 86400000).toISOString(),
     status_changed_by: "station_master",
-    reason: "Routine quarterly archiving of voice logs",
+    reason: "Routine quarterly archiving of incident reports",
     scheduled_purge_at: null,
     purged_at: null,
     purged_by: null,
@@ -53,8 +53,8 @@ const INITIAL_MOCK_RECORDS = [
     score_label: "Medium"
   },
   {
-    id: "REC-1003",
-    entity_type: "incident_report",
+    id: "rec-ann-101",
+    entity_type: "announcement",
     status: "pending_deletion",
     created_at: new Date(Date.now() - 120 * 86400000).toISOString(),
     status_changed_at: new Date(Date.now() - 2 * 86400000).toISOString(),
@@ -67,7 +67,7 @@ const INITIAL_MOCK_RECORDS = [
     score_label: "Critical"
   },
   {
-    id: "REC-1004",
+    id: "rec-tel-303",
     entity_type: "voice_transcript",
     status: "deleted",
     created_at: new Date(Date.now() - 180 * 86400000).toISOString(),
@@ -81,6 +81,7 @@ const INITIAL_MOCK_RECORDS = [
     score_label: "Low"
   }
 ];
+
 
 export default function RetentionPanel({ showToast }) {
   // Active role state: 'viewer' | 'station_master' | 'controller'
