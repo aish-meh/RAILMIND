@@ -141,40 +141,56 @@ export default function RetentionPanel({ showToast }) {
   const tableEndRef = useRef(null);
   const containerRef = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const API_BASE = 'http://localhost:8001';
+  const API_BASE = '';
 
-  const handleScroll = () => {
-    if (containerRef.current) {
-      setIsScrolled(containerRef.current.scrollTop > 120);
-    } else {
-      setIsScrolled(window.scrollY > 120);
-    }
-  };
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (el) {
-      el.addEventListener('scroll', handleScroll, { passive: true });
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      if (el) el.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('scroll', handleScroll);
-    };
+  const handleScroll = useCallback(() => {
+    const mainEl = document.querySelector('.main-content');
+    const scrollPos = mainEl ? mainEl.scrollTop : window.scrollY;
+    setIsScrolled(scrollPos > 100);
   }, []);
 
+  useEffect(() => {
+    const mainEl = document.querySelector('.main-content');
+    if (mainEl) {
+      mainEl.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Check initial scroll state
+    handleScroll();
+
+    return () => {
+      if (mainEl) mainEl.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
+
   const handleScrollToggle = () => {
-    if (isScrolled) {
-      if (containerRef.current) {
-        containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    const mainEl = document.querySelector('.main-content');
+    const currentScroll = mainEl ? mainEl.scrollTop : window.scrollY;
+
+    if (currentScroll > 100 || isScrolled) {
+      // Scroll to Top
+      if (mainEl) {
+        mainEl.scrollTo({ top: 0, behavior: 'smooth' });
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      if (tableEndRef.current) {
-        tableEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      if (containerRef.current) {
+        containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+      setIsScrolled(false);
+    } else {
+      // Scroll to Bottom
+      if (tableEndRef.current) {
+        tableEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } else if (mainEl) {
+        mainEl.scrollTo({ top: mainEl.scrollHeight, behavior: 'smooth' });
+      }
+      setIsScrolled(true);
     }
   };
+
 
   // ── WebSocket connection for confirmation_state_change ──
   useEffect(() => {
@@ -560,10 +576,10 @@ export default function RetentionPanel({ showToast }) {
   };
 
   return (
-    <div className="executive-theme-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div ref={containerTopRef} style={{ height: 0, overflow: 'hidden' }}></div>
+    <div className="executive-theme-container" ref={containerRef} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
       {/* Official Top Banner */}
+
 
       <div className="executive-header-banner" style={{ padding: '20px 32px 28px 32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
