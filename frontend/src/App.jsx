@@ -1817,6 +1817,8 @@ export default function App() {
     try {
       localStorage.setItem('railmind_auth_user', JSON.stringify(user));
     } catch (e) {}
+  };
+
   return (
     <>
       {!currentUser ? (
@@ -1855,9 +1857,6 @@ export default function App() {
                       <History size={48} style={{ opacity: 0.5, margin: '0 auto 15px' }} />
                       <h2>No Historical Data Yet</h2>
                       <p>Run a simulation on the dashboard to generate reports.</p>
-                    </div>
-                  </div>
-                ) : (
                     </div>
                   </div>
                 ) : (
