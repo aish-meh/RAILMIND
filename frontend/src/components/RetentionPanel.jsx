@@ -339,21 +339,23 @@ export default function RetentionPanel({ showToast }) {
     <div className="executive-theme-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
       {/* Official Top Banner */}
-      <div className="executive-header-banner">
+      <div className="executive-header-banner" style={{ padding: '20px 32px 28px 32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <div className="executive-header-sub">MINISTRY OF RAILWAYS</div>
-            <h1 className="executive-header-title">Retention & Data Governance Register</h1>
+            <div className="executive-header-sub" style={{ fontSize: '10px', letterSpacing: '1.5px' }}>MINISTRY OF RAILWAYS</div>
+            <h1 className="executive-header-title" style={{ fontSize: '22px', fontWeight: '600', letterSpacing: '-0.01em', margin: '2px 0 0 0' }}>
+              Retention & Data Governance Register
+            </h1>
           </div>
-          <div style={{ textAlign: 'right', color: '#94A3B8', fontSize: '11px', fontWeight: '700', letterSpacing: '1px' }}>
+          <div style={{ textAlign: 'right', color: '#94A3B8', fontSize: '11px', fontWeight: '600', letterSpacing: '0.5px' }}>
             Reference Authority<br />
-            <strong style={{ color: '#FFFFFF', fontSize: '12px' }}>RAILMIND / DGR-2026</strong>
+            <strong style={{ color: '#FFFFFF', fontSize: '12px', fontWeight: '700' }}>RAILMIND / DGR-2026</strong>
           </div>
         </div>
 
         {/* Overlapping Emblem Badge */}
         <div className="executive-emblem-badge" title="Ministry Emblem Authority">
-          <Train size={20} color="#C5A059" />
+          <Train size={18} color="#C5A059" />
         </div>
       </div>
 

@@ -790,16 +790,16 @@ export default function App() {
 
   const renderDashboard = () => (
     <>
-      <header style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', gap: '15px', padding: '10px 0' }}>
+      <header style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', gap: '15px', padding: '6px 0' }}>
         <div>
-          <h1 style={{ fontSize: '28px', color: '#0F172A', fontWeight: '800' }}>Live Operations Command</h1>
-          <p style={{ fontSize: '13px', fontWeight: '700', color: '#64748B', letterSpacing: '1px', textTransform: 'uppercase', marginTop: '2px' }}>
-            DELAY PROPAGATION & MULTI-AGENT RECOVERY
+          <h1 style={{ fontSize: '24px', color: '#0F172A', fontWeight: '600', letterSpacing: '-0.01em' }}>Live Operations Command</h1>
+          <p style={{ fontSize: '12px', fontWeight: '500', color: '#64748B', letterSpacing: '0.8px', textTransform: 'uppercase', marginTop: '3px' }}>
+            Delay Propagation & Multi-Agent Recovery
           </p>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 16px', borderRadius: '20px', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isProcessing ? '#D97706' : '#10B981', animation: isProcessing ? 'pulseGlow 1.5s infinite' : 'none' }}></div>
-          <span style={{ fontSize: '12px', fontWeight: '700', color: '#0F172A' }}>{isProcessing ? 'AGENTS ACTIVE' : 'SYSTEM READY'}</span>
+          <span style={{ fontSize: '11px', fontWeight: '600', color: '#334155', letterSpacing: '0.5px' }}>{isProcessing ? 'AGENTS ACTIVE' : 'SYSTEM READY'}</span>
         </div>
       </header>
 

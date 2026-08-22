@@ -259,13 +259,13 @@ select option {
 }
 
 
-/* Network Topology */
+/* Network Topology Track Line Fix */
 .network-container {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 40px;
+  padding: 60px 40px;
   height: 100%;
 }
 
@@ -278,49 +278,55 @@ select option {
 }
 
 .node-circle {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: var(--text-secondary);
-  border: 3px solid var(--bg-dark);
-  box-shadow: 0 0 0 2px var(--panel-border);
-  transition: all 0.3s ease;
+  background: #FFFFFF;
+  border: 3px solid #64748B;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
-.node-circle.active {
-  background: var(--error);
-  box-shadow: 0 0 0 2px var(--error), 0 0 20px var(--error);
-  animation: pulseError 2s infinite;
+.node-circle.safe {
+  background: #FFFFFF;
+  border-color: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
-.node-circle.safe {
-  background: var(--success);
-  box-shadow: 0 0 0 2px var(--success), 0 0 15px rgba(16, 185, 129, 0.4);
+.node-circle.active {
+  background: #DC2626;
+  border-color: #DC2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25);
+  animation: pulseError 2s infinite;
 }
 
 .node-label {
   position: absolute;
-  top: 30px;
+  top: 32px;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #334155;
   text-align: center;
 }
 
 .network-edge {
   height: 4px;
-  width: 150px;
-  background: rgba(255, 255, 255, 0.1);
+  width: 120px;
+  background: #CBD5E1;
   position: relative;
   z-index: 1;
+  border-radius: 2px;
+  margin: 0 -2px;
+  transition: all 0.3s ease;
 }
 
 .network-edge.active {
-  background: var(--error);
-  box-shadow: 0 0 15px var(--error);
+  background: #0284C7;
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
 }
+
 
 /* Shockwave Animation */
 .shockwave {
