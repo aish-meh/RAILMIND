@@ -19,6 +19,7 @@ import {
 
 import { MultiLanguageVoiceControl } from './components/MultiLanguageVoiceControl';
 import RetentionPanel from './components/RetentionPanel';
+import { NetworkTopology } from './components/NetworkTopology';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -121,7 +122,22 @@ export default function App() {
       .then(data => setAnnouncementsLog(data))
       .catch(err => console.error("Error fetching announcements:", err));
 
+    fetch('/api/incident-reports')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const formatted = data.map(item => ({
+            id: item.id || Date.now(),
+            date: item.created_at ? new Date(item.created_at).toLocaleString() : new Date().toLocaleString(),
+            content: item.content
+          })).reverse();
+          setHistoricalReports(formatted);
+        }
+      })
+      .catch(err => console.error("Error fetching incident reports:", err));
+
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
     const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
     
     ws.onmessage = (event) => {
@@ -447,7 +463,23 @@ export default function App() {
     }
   };
 
-  const handleInjectDelay = async () => {
+  const handleClearIncidentReports = async () => {
+    try {
+      await fetch('/api/clear-incident-reports', { method: 'POST' });
+      setHistoricalReports([]);
+      showToast("success", "History Cleared", "Successfully cleared all historical incident reports.");
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Error", "Failed to clear incident reports.");
+    }
+  };
+
+  const handleInjectDelay = async (customParams = null) => {
+    const train_id = (customParams && customParams.train_id) || selectedTrain;
+    const station_code = (customParams && customParams.station_code) || selectedStation;
+    const delay_min = (customParams && customParams.delay_minutes !== undefined) ? customParams.delay_minutes : delayMinutes;
+    const delay_reason = (customParams && customParams.reason) || reason;
+
     clearSpeechQueue();
     setLogs([]);
     setReschedulePlan({});
@@ -455,18 +487,26 @@ export default function App() {
     setCurrentSeverity(null);
     setCurrentExplanation(null);
     setIsProcessing(true);
-    setActiveDelayStation(selectedStation);
+    setActiveDelayStation(station_code);
+    setSelectedTrain(train_id);
+    setSelectedStation(station_code);
     
-    await fetch('/api/inject-delay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        train_id: selectedTrain,
-        station_code: selectedStation,
-        delay_minutes: delayMinutes,
-        reason: reason
-      })
-    });
+    try {
+      await fetch('/api/inject-delay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          train_id: train_id,
+          station_code: station_code,
+          delay_minutes: delay_min,
+          reason: delay_reason
+        })
+      });
+    } catch (err) {
+      console.error("Error triggering delay simulation:", err);
+      setIsProcessing(false);
+      showToast('error', 'Simulation Error', 'Failed to trigger delay simulation.');
+    }
   };
 
   const triggerAgentHighlight = () => {
@@ -735,58 +775,23 @@ export default function App() {
     </div>
   );
 
-  const renderNetworkTopology = () => {
-    const mainRoute = ["NDLS", "CNB", "PRYJ", "BSB", "PNBE", "HWH"];
-    const severityColor = currentSeverity === 'Critical' ? 'var(--error)' : currentSeverity === 'Major' ? 'var(--warning)' : 'var(--accent-secondary)';
-    
-    return (
-      <div className="glass-panel" style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column' }}>
-        <h2 style={{ fontSize: '24px', marginBottom: '10px' }} className="text-gradient">Live Network Topology</h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '40px' }}>Visual representation of cascading delays across the railway backbone.</p>
-        
-        <div className="network-container">
-          {mainRoute.map((code, index) => {
-            const station = stations.find(s => s.code === code);
-            const isDelayed = activeDelayStation && mainRoute.indexOf(code) >= mainRoute.indexOf(activeDelayStation);
-            const isOriginOfDelay = code === activeDelayStation;
-
-            return (
-              <React.Fragment key={code}>
-                <div className="network-node">
-                  <div 
-                    className={`node-circle ${isDelayed ? 'active' : 'safe'}`}
-                    style={isDelayed ? {
-                      background: severityColor,
-                      boxShadow: `0 0 0 2px ${severityColor}, 0 0 20px ${severityColor}`
-                    } : {}}
-                  >
-                    {isOriginOfDelay && (
-                      <div 
-                        className="shockwave"
-                        style={{
-                          background: currentSeverity === 'Critical' ? 'rgba(244, 63, 94, 0.6)' : currentSeverity === 'Major' ? 'rgba(245, 158, 11, 0.6)' : 'rgba(14, 165, 233, 0.6)'
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div className="node-label">{station?.name || code}</div>
-                </div>
-                {index < mainRoute.length - 1 && (
-                  <div 
-                    className={`network-edge ${isDelayed && mainRoute.indexOf(mainRoute[index+1]) >= mainRoute.indexOf(activeDelayStation) ? 'active' : ''}`}
-                    style={isDelayed && mainRoute.indexOf(mainRoute[index+1]) >= mainRoute.indexOf(activeDelayStation) ? {
-                      background: severityColor,
-                      boxShadow: `0 0 15px ${severityColor}`
-                    } : {}}
-                  />
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
+  const renderNetworkTopology = () => (
+    <NetworkTopology
+      trains={trains}
+      stations={stations}
+      reschedulePlan={reschedulePlan}
+      report={report}
+      currentSeverity={currentSeverity}
+      currentExplanation={currentExplanation}
+      activeDelayStation={activeDelayStation}
+      isProcessing={isProcessing}
+      onInjectDelay={handleInjectDelay}
+      selectedTrain={selectedTrain}
+      selectedStation={selectedStation}
+      onSelectTrain={(trainId) => setSelectedTrain(trainId)}
+      onSelectStation={(stationCode) => setSelectedStation(stationCode)}
+    />
+  );
 
   const renderDashboard = () => (
     <>
@@ -1732,8 +1737,22 @@ export default function App() {
         {activeTab === 'reports' && (
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px', height: '100%', overflowY: 'auto', flex: 1 }}>
-            <h2 className="text-gradient" style={{ fontSize: '28px' }}>Incident History</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '10px' }}>A log of all AI-generated incident reports from this session.</p>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div>
+                <h2 className="text-gradient" style={{ fontSize: '28px' }}>Incident History</h2>
+                <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>A persistent historical record of all AI-generated incident reports.</p>
+              </div>
+              {historicalReports.length > 0 && (
+                <button 
+                  className="btn-primary" 
+                  onClick={handleClearIncidentReports}
+                  style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--error)', border: '1px solid rgba(244, 63, 94, 0.3)', boxShadow: 'none', padding: '10px 18px', fontSize: '14px' }}
+                >
+                  <Trash2 size={16} style={{ marginRight: '8px', display: 'inline', verticalAlign: 'middle' }} /> Clear Incident History
+                </button>
+              )}
+            </header>
+
             
             {historicalReports.length === 0 ? (
               <div className="glass-panel" style={{ padding: '40px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

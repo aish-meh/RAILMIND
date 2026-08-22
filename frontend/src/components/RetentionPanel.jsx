@@ -20,6 +20,7 @@ import {
   Train
 } from 'lucide-react';
 
+
 // Seed mock records matching the exact shape & IDs
 const INITIAL_MOCK_RECORDS = [
   {
@@ -214,13 +215,46 @@ export default function RetentionPanel({ showToast }) {
     deleted: records.filter(r => r.status === 'deleted').length || 12,
   };
 
-  const scrollToBottom = () => {
-    if (tableEndRef.current) {
-      tableEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  const [isScrolledDown, setIsScrolledDown] = useState(false);
+  const containerTopRef = useRef(null);
+
+  useEffect(() => {
+    const scrollContainer = document.querySelector('.main-content') || window;
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop !== undefined ? scrollContainer.scrollTop : window.scrollY;
+      setIsScrolledDown(scrollTop > 150);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const handleScrollToggle = () => {
+    const scrollContainer = document.querySelector('.main-content');
+    if (isScrolledDown) {
+      if (scrollContainer) {
+        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      if (containerTopRef.current) {
+        containerTopRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      if (tableEndRef.current) {
+        tableEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+      if (scrollContainer) {
+        scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' });
+      }
     }
   };
 
   const getPurgeCountdownText = (record) => {
+
     if (record.status === 'deleted') return '-';
     if (record.status !== 'pending_deletion' || !record.scheduled_purge_at) return '-';
     
@@ -373,8 +407,10 @@ export default function RetentionPanel({ showToast }) {
 
   return (
     <div className="executive-theme-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div ref={containerTopRef} style={{ height: 0, overflow: 'hidden' }}></div>
       
       {/* Official Top Banner */}
+
       <div className="executive-header-banner" style={{ padding: '20px 32px 28px 32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
@@ -594,9 +630,12 @@ export default function RetentionPanel({ showToast }) {
         className="executive-floating-btn" 
         onClick={handleScrollToggle} 
         title={isScrolled ? "Scroll to Top" : "Scroll to Bottom"}
+        aria-label={isScrolled ? "Scroll to Top" : "Scroll to Bottom"}
       >
         {isScrolled ? <ArrowUp size={20} /> : <ArrowDown size={20} />}
       </div>
+      </div>
+
 
       {/* Modal Dialogs */}
       {actionModal.open && (
