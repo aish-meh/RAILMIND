@@ -708,7 +708,7 @@ input:checked + .slider:before {
   white-space: nowrap;
 }
 
-/* Agent highlight animation */
+/* Highlight panel transition */
 .highlight-panel {
   animation: highlightGlow 3s ease !important;
 }
@@ -723,3 +723,232 @@ input:checked + .slider:before {
     box-shadow: 0 0 25px rgba(14, 165, 233, 0.5), inset 0 1px 1px rgba(14, 165, 233, 0.2);
   }
 }
+
+/* ==============================================================================
+   MINISTRY OF RAILWAYS EXECUTIVE CREAM & NAVY THEME (OFFICIAL HACKATHON DEMO)
+   ============================================================================== */
+
+.executive-theme-container {
+  background-color: #F7F7F5;
+  color: #0F172A;
+  min-height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Official Header Banner */
+.executive-header-banner {
+  background: linear-gradient(135deg, #091D36 0%, #0B2545 100%);
+  color: #FFFFFF;
+  padding: 24px 32px 32px 32px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(11, 37, 69, 0.15);
+}
+
+.executive-header-sub {
+  color: #C5A059;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.executive-header-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+.executive-emblem-badge {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #0B2545;
+  border: 3px solid #C5A059;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(11, 37, 69, 0.3);
+  z-index: 10;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.executive-emblem-badge:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 6px 18px rgba(197, 160, 89, 0.4);
+}
+
+/* Executive Clearance Role Pills */
+.executive-role-pill {
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border: 1px solid #CBD5E1;
+  background: #E2E8F0;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.executive-role-pill:hover {
+  background: #CBD5E1;
+  color: #0F172A;
+  transform: translateY(-1px);
+}
+
+.executive-role-pill.active {
+  background: #0B2545;
+  color: #FFFFFF;
+  border-color: #0B2545;
+  box-shadow: 0 2px 8px rgba(11, 37, 69, 0.25);
+}
+
+/* Executive Metric Cards */
+.executive-metric-card {
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.executive-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+}
+
+.executive-metric-card.active-card::before { background: #10B981; }
+.executive-metric-card.pending-card::before { background: #D97706; }
+.executive-metric-card.archived-card::before { background: #2563EB; }
+.executive-metric-card.deleted-card::before { background: #DC2626; }
+
+.executive-metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.1);
+  border-color: #CBD5E1;
+}
+
+.executive-metric-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748B;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.executive-metric-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: #0F172A;
+  margin-top: 10px;
+  line-height: 1;
+}
+
+/* Executive Table */
+.executive-table-container {
+  background: #FFFFFF;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.executive-table-header {
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.executive-table-header th {
+  padding: 16px 20px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748B;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.executive-table-row {
+  border-bottom: 1px solid #F1F5F9;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.executive-table-row:hover {
+  background-color: #F8FAFC;
+  transform: translateX(2px);
+}
+
+.executive-id-tag {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  color: #94A3B8;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* Action Icon Buttons */
+.executive-action-btn {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.executive-action-btn:hover:not(:disabled) {
+  background: #F1F5F9;
+  color: #0B2545;
+  transform: scale(1.12);
+}
+
+.executive-action-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* Floating Scroll Indicator */
+.executive-floating-btn {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #334155;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.executive-floating-btn:hover {
+  background: #0B2545;
+  transform: translateX(-50%) translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 24px rgba(11, 37, 69, 0.35);
+}
+
