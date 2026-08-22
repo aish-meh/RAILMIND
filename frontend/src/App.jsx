@@ -13,8 +13,16 @@ import {
   Volume2, 
   VolumeX, 
   Trash2, 
-  Settings as SettingsIcon 
+  Settings as SettingsIcon,
+  Database,
+  Shield,
+  RotateCcw,
+  Archive,
+  Eye,
+  RefreshCw,
+  Filter
 } from 'lucide-react';
+
 import { MultiLanguageVoiceControl } from './components/MultiLanguageVoiceControl';
 
 export default function App() {
@@ -54,7 +62,19 @@ export default function App() {
     ja: false
   });
 
+  // Retention Subsystem States
+  const [currentRole, setCurrentRole] = useState('controller');
+  const [retentionRecords, setRetentionRecords] = useState([]);
+  const [retentionLoading, setRetentionLoading] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterEntityType, setFilterEntityType] = useState('');
+  const [auditTrailModalRecord, setAuditTrailModalRecord] = useState(null);
+  const [auditTrailList, setAuditTrailList] = useState([]);
+  const [auditTrailLoading, setAuditTrailLoading] = useState(false);
+  const [actionModal, setActionModal] = useState(null);
+
   const logsContainerRef = useRef(null);
+
   const latestSettings = useRef(settings);
   const speechQueueRef = useRef([]);
   const speechIndexRef = useRef(0);
@@ -91,7 +111,7 @@ export default function App() {
   }, [logs]);
 
   useEffect(() => {
-    fetch('http://localhost:8001/api/initial-state')
+    fetch('/api/initial-state')
       .then(res => res.json())
       .then(data => {
         setTrains(data.trains);
@@ -101,12 +121,13 @@ export default function App() {
       })
       .catch(err => console.error("Error fetching state:", err));
 
-    fetch('http://localhost:8001/api/announcements')
+    fetch('/api/announcements')
       .then(res => res.json())
       .then(data => setAnnouncementsLog(data))
       .catch(err => console.error("Error fetching announcements:", err));
 
-    const ws = new WebSocket('ws://localhost:8001/ws');
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
     
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
@@ -149,10 +170,105 @@ export default function App() {
     }, 5000);
   };
 
+  const fetchRetentionRecords = async () => {
+    setRetentionLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filterStatus) params.append('status', filterStatus);
+      if (filterEntityType) params.append('entity_type', filterEntityType);
+      const queryStr = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetch(`/api/retention/records${queryStr}`, {
+        headers: { 'X-Role': currentRole }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRetentionRecords(data);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast('error', 'Retention Error', err.detail || 'Failed to fetch retention records');
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('error', 'Network Error', 'Failed to reach retention service');
+    } finally {
+      setRetentionLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'retention') {
+      fetchRetentionRecords();
+    }
+  }, [activeTab, currentRole, filterStatus, filterEntityType]);
+
+  const handleExecuteRetentionAction = async () => {
+    if (!actionModal) return;
+    const { type, record, reason } = actionModal;
+    const endpointMap = {
+      'archive': `/api/retention/archive/${record.id}`,
+      'request-delete': `/api/retention/request-delete/${record.id}`,
+      'restore': `/api/retention/restore/${record.id}`,
+      'approve-delete': `/api/retention/approve-delete/${record.id}`
+    };
+
+    try {
+      const res = await fetch(endpointMap[type], {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Role': currentRole
+        },
+        body: JSON.stringify({ reason: reason || undefined })
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        showToast('success', 'Status Updated', `Record ${record.id} is now ${updated.status}.`);
+        setActionModal(null);
+        fetchRetentionRecords();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast('error', 'Action Denied', err.detail || `Cannot perform ${type} on record`);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('error', 'Error', 'Failed to perform retention action');
+    }
+  };
+
+  const handleOpenAuditTrail = async (record) => {
+    setAuditTrailModalRecord(record);
+    setAuditTrailLoading(true);
+    try {
+      const res = await fetch(`/api/retention/audit-trail/${record.id}`, {
+        headers: { 'X-Role': currentRole }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAuditTrailList(data);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast('error', 'Audit Trail Error', err.detail || 'Could not fetch audit trail');
+      }
+    } catch (e) {
+      showToast('error', 'Error', 'Failed to load audit trail');
+    } finally {
+      setAuditTrailLoading(false);
+    }
+  };
+
+
   const clearSpeechQueue = () => {
     const synth = window.speechSynthesis;
     if (synth) {
       synth.cancel();
+    }
+    if (activeUtteranceRef.current && typeof activeUtteranceRef.current.pause === 'function') {
+      try {
+        activeUtteranceRef.current.pause();
+      } catch (err) {
+        console.error("Error pausing fallback audio:", err);
+      }
     }
     if (speechTimeoutRef.current) {
       clearTimeout(speechTimeoutRef.current);
@@ -178,49 +294,51 @@ export default function App() {
     }
 
     const item = speechQueueRef.current[speechIndexRef.current];
-    const utterance = new SpeechSynthesisUtterance(item.text);
-    activeUtteranceRef.current = utterance; // Prevent garbage collection!
-
-    const voices = synth.getVoices();
-    const matchingVoice = voices.find(v => v.lang.startsWith(item.lang) || v.lang.includes(item.lang.split('-')[0]));
-    if (matchingVoice) {
-      utterance.voice = matchingVoice;
-    }
-    
-    utterance.lang = item.lang;
-    utterance.rate = latestSettings.current.speechRate || 1.0;
-    utterance.pitch = latestSettings.current.speechPitch || 1.0;
-
     const currentIdx = speechIndexRef.current;
 
-    utterance.onend = () => {
-      if (speechIndexRef.current === currentIdx) {
-        activeUtteranceRef.current = null;
-        speechIndexRef.current += 1;
-        speechTimeoutRef.current = setTimeout(() => {
-          playQueue();
-        }, 2000);
-      }
-    };
+    const voices = synth.getVoices();
+    const hasLocalVoice = voices.some(v => v.lang.toLowerCase().startsWith(item.lang.split('-')[0]) || v.lang.toLowerCase().includes(item.lang.split('-')[0]));
 
-    utterance.onerror = (e) => {
-      console.error("Speech Synthesis Error:", e);
-      if (speechIndexRef.current === currentIdx) {
-        activeUtteranceRef.current = null;
-        if (e.error !== 'interrupted' && e.error !== 'canceled') {
-          showToast("error", "TTS Playback Error", `Failed to speak in ${item.lang}. Fallback notification shown.`);
+    if (hasLocalVoice) {
+      const utterance = new SpeechSynthesisUtterance(item.text);
+      activeUtteranceRef.current = utterance; // Prevent garbage collection!
+
+      const matchingVoice = voices.find(v => v.lang.startsWith(item.lang) || v.lang.includes(item.lang.split('-')[0]));
+      if (matchingVoice) {
+        utterance.voice = matchingVoice;
+      }
+      
+      utterance.lang = item.lang;
+      utterance.rate = latestSettings.current.speechRate || 1.0;
+      utterance.pitch = latestSettings.current.speechPitch || 1.0;
+
+      utterance.onend = () => {
+        if (speechIndexRef.current === currentIdx) {
+          activeUtteranceRef.current = null;
+          speechIndexRef.current += 1;
+          speechTimeoutRef.current = setTimeout(() => {
+            playQueue();
+          }, 2000);
         }
-        speechIndexRef.current += 1;
-        speechTimeoutRef.current = setTimeout(() => {
-          playQueue();
-        }, 2000);
-      }
-    };
+      };
 
-    synth.speak(utterance);
+      utterance.onerror = (e) => {
+        console.error("Speech Synthesis Error:", e);
+        if (speechIndexRef.current === currentIdx) {
+          activeUtteranceRef.current = null;
+          if (e.error !== 'interrupted' && e.error !== 'canceled') {
+            showToast("error", "TTS Playback Error", `Failed to speak in ${item.lang}. Fallback notification shown.`);
+          }
+          speechIndexRef.current += 1;
+          speechTimeoutRef.current = setTimeout(() => {
+            playQueue();
+          }, 2000);
+        }
+      };
 
-    // Chrome resume-speaking loop to fix the random pauses
-    if (window.speechSynthesis) {
+      synth.speak(utterance);
+
+      // Chrome resume-speaking loop to fix the random pauses
       const resumeSpeech = () => {
         if (activeUtteranceRef.current === utterance && window.speechSynthesis.speaking) {
           window.speechSynthesis.resume();
@@ -228,6 +346,47 @@ export default function App() {
         }
       };
       setTimeout(resumeSpeech, 10000);
+    } else {
+      console.log(`No local voice found for ${item.lang}. Falling back to online TTS.`);
+      const langCode = item.lang.split('-')[0];
+      const encodedText = encodeURIComponent(item.text);
+      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encodedText}`;
+      
+      const audio = new Audio(ttsUrl);
+      activeUtteranceRef.current = audio;
+
+      audio.onended = () => {
+        if (speechIndexRef.current === currentIdx) {
+          activeUtteranceRef.current = null;
+          speechIndexRef.current += 1;
+          speechTimeoutRef.current = setTimeout(() => {
+            playQueue();
+          }, 2000);
+        }
+      };
+
+      audio.onerror = (e) => {
+        console.error("Audio TTS Error:", e);
+        if (speechIndexRef.current === currentIdx) {
+          activeUtteranceRef.current = null;
+          showToast("error", "TTS Playback Error", `Failed to speak in ${item.lang} via fallback API.`);
+          speechIndexRef.current += 1;
+          speechTimeoutRef.current = setTimeout(() => {
+            playQueue();
+          }, 2000);
+        }
+      };
+
+      audio.play().catch(err => {
+        console.error("Audio Play Error:", err);
+        if (speechIndexRef.current === currentIdx) {
+          activeUtteranceRef.current = null;
+          speechIndexRef.current += 1;
+          speechTimeoutRef.current = setTimeout(() => {
+            playQueue();
+          }, 2000);
+        }
+      });
     }
   };
 
@@ -245,30 +404,19 @@ export default function App() {
       return;
     }
 
-    const voices = synth.getVoices();
-    const hasVoice = (langCode) => voices.some(v => v.lang.toLowerCase().startsWith(langCode) || v.lang.toLowerCase().includes(langCode));
-
     const items = [];
     newAnnouncements.forEach(announcement => {
       if (latestSettings.current.announcementLang === 'en' || latestSettings.current.announcementLang === 'all') {
-        if (hasVoice('en')) {
-          items.push({ text: announcement.text_en, lang: 'en-IN' });
-        }
+        items.push({ text: announcement.text_en, lang: 'en-IN' });
       }
       if (latestSettings.current.announcementLang === 'hi' || latestSettings.current.announcementLang === 'all') {
-        if (hasVoice('hi')) {
-          items.push({ text: announcement.text_hi, lang: 'hi-IN' });
-        }
+        items.push({ text: announcement.text_hi, lang: 'hi-IN' });
       }
       if (latestSettings.current.announcementLang === 'ta' || latestSettings.current.announcementLang === 'all') {
-        if (hasVoice('ta')) {
-          items.push({ text: announcement.text_ta, lang: 'ta-IN' });
-        }
+        items.push({ text: announcement.text_ta, lang: 'ta-IN' });
       }
       if (latestSettings.current.announcementLang === 'ja' || latestSettings.current.announcementLang === 'all') {
-        if (hasVoice('ja')) {
-          items.push({ text: announcement.text_ja || announcement.text_en, lang: 'ja-JP' });
-        }
+        items.push({ text: announcement.text_ja || announcement.text_en, lang: 'ja-JP' });
       }
     });
 
@@ -295,7 +443,7 @@ export default function App() {
 
   const handleClearAnnouncements = async () => {
     try {
-      await fetch('http://localhost:8001/api/clear-announcements', { method: 'POST' });
+      await fetch('/api/clear-announcements', { method: 'POST' });
       setAnnouncementsLog([]);
       showToast("success", "Logs Cleared", "Successfully cleared all announcement audit logs.");
     } catch (err) {
@@ -314,7 +462,7 @@ export default function App() {
     setIsProcessing(true);
     setActiveDelayStation(selectedStation);
     
-    await fetch('http://localhost:8001/api/inject-delay', {
+    await fetch('/api/inject-delay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -405,7 +553,7 @@ export default function App() {
         setActiveDelayStation(stationCode);
 
         try {
-          await fetch('http://localhost:8001/api/inject-delay', {
+          await fetch('/api/inject-delay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -466,7 +614,7 @@ export default function App() {
         setActiveDelayStation(stationCode);
 
         try {
-          await fetch('http://localhost:8001/api/inject-delay', {
+          await fetch('/api/inject-delay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -564,12 +712,20 @@ export default function App() {
         Incident History
       </div>
       <div 
+        className={`nav-item ${activeTab === 'retention' ? 'active' : ''}`}
+        onClick={() => setActiveTab('retention')}
+      >
+        <Database size={20} />
+        Data Retention
+      </div>
+      <div 
         className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
         onClick={() => setActiveTab('settings')}
       >
         <SettingsIcon size={20} />
         Settings
       </div>
+
 
       <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <MultiLanguageVoiceControl onCommand={handleVoiceCommand} showToast={showToast} />
@@ -1003,6 +1159,534 @@ export default function App() {
     </div>
   );
 
+  const renderRetention = () => {
+    const stats = {
+      active: retentionRecords.filter(r => r.status === 'active').length,
+      archived: retentionRecords.filter(r => r.status === 'archived').length,
+      pending_deletion: retentionRecords.filter(r => r.status === 'pending_deletion').length,
+      deleted: retentionRecords.filter(r => r.status === 'deleted').length,
+    };
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '30px', height: '100%', overflowY: 'auto', flex: 1 }}>
+        {/* Header & Role Switcher */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <h1 className="text-gradient" style={{ fontSize: '28px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Database size={28} color="var(--accent-primary)" /> Data Retention & Lifecycle Management
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Manage policy lifecycles, scheduled purges, and regulatory compliance audit trails.
+            </p>
+          </div>
+
+          {/* Role Header Switcher */}
+          <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', gap: '10px', background: 'rgba(0,0,0,0.35)' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Active Role (X-Role):</span>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {[
+                { key: 'viewer', label: 'Viewer (Read-Only)', color: 'var(--text-secondary)' },
+                { key: 'station_master', label: 'Station Master', color: 'var(--accent-secondary)' },
+                { key: 'controller', label: 'Controller (Admin)', color: 'var(--accent-primary)' }
+              ].map(role => (
+                <button
+                  key={role.key}
+                  onClick={() => setCurrentRole(role.key)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: currentRole === role.key ? '1px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.08)',
+                    background: currentRole === role.key ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255,255,255,0.02)',
+                    color: currentRole === role.key ? '#fff' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: currentRole === role.key ? '700' : '500',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {role.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        {/* Stats Row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+          <div className="glass-panel" style={{ padding: '18px 20px', borderLeft: '4px solid var(--success)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Records</div>
+            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '6px', color: 'var(--success)' }}>{stats.active}</div>
+          </div>
+          <div className="glass-panel" style={{ padding: '18px 20px', borderLeft: '4px solid var(--accent-secondary)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Archived</div>
+            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '6px', color: 'var(--accent-secondary)' }}>{stats.archived}</div>
+          </div>
+          <div className="glass-panel" style={{ padding: '18px 20px', borderLeft: '4px solid var(--warning)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pending Deletion</div>
+            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '6px', color: 'var(--warning)' }}>{stats.pending_deletion}</div>
+          </div>
+          <div className="glass-panel" style={{ padding: '18px 20px', borderLeft: '4px solid var(--error)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Purged / Deleted</div>
+            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '6px', color: 'var(--error)' }}>{stats.deleted}</div>
+          </div>
+        </div>
+
+        {/* Controls & Filter Bar */}
+        <div className="glass-panel" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Filter size={16} color="var(--text-secondary)" />
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Status:</span>
+              <select 
+                value={filterStatus} 
+                onChange={(e) => setFilterStatus(e.target.value)}
+                style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px' }}
+              >
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="archived">Archived</option>
+                <option value="pending_deletion">Pending Deletion</option>
+                <option value="deleted">Deleted</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Entity Type:</span>
+              <select 
+                value={filterEntityType} 
+                onChange={(e) => setFilterEntityType(e.target.value)}
+                style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px' }}
+              >
+                <option value="">All Entity Types</option>
+                <option value="announcement">Announcement</option>
+                <option value="incident_report">Incident Report</option>
+                <option value="signal_telemetry">Signal Telemetry</option>
+                <option value="cctv_log">CCTV Log</option>
+                <option value="train_schedule">Train Schedule</option>
+              </select>
+            </div>
+          </div>
+
+          <button 
+            className="btn-primary" 
+            onClick={fetchRetentionRecords}
+            style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <RefreshCw size={14} className={retentionLoading ? 'animate-spin' : ''} /> Refresh
+          </button>
+        </div>
+
+        {/* Records Table / Cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {retentionLoading && retentionRecords.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              Loading retention data...
+            </div>
+          ) : retentionRecords.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <Database size={40} style={{ opacity: 0.4, margin: '0 auto 12px' }} />
+              <h3>No Records Found</h3>
+              <p style={{ marginTop: '4px', fontSize: '13px' }}>Try adjusting your filters or triggering new incidents to populate records.</p>
+            </div>
+          ) : (
+            retentionRecords.map((record) => {
+              const statusColors = {
+                active: { bg: 'rgba(16, 185, 129, 0.15)', text: 'var(--success)', border: 'rgba(16, 185, 129, 0.3)' },
+                archived: { bg: 'rgba(14, 165, 233, 0.15)', text: 'var(--accent-secondary)', border: 'rgba(14, 165, 233, 0.3)' },
+                pending_deletion: { bg: 'rgba(245, 158, 11, 0.15)', text: 'var(--warning)', border: 'rgba(245, 158, 11, 0.3)' },
+                deleted: { bg: 'rgba(244, 63, 94, 0.15)', text: 'var(--error)', border: 'rgba(244, 63, 94, 0.3)' }
+              };
+              const colorTheme = statusColors[record.status] || statusColors.active;
+
+              return (
+                <div 
+                  key={record.id} 
+                  className="glass-panel" 
+                  style={{ 
+                    padding: '20px', 
+                    borderLeft: `4px solid ${colorTheme.text}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontWeight: '700', fontSize: '15px', color: '#fff', letterSpacing: '0.5px' }}>{record.id}</span>
+                      <span style={{ fontSize: '11px', textTransform: 'uppercase', background: 'rgba(255,255,255,0.06)', padding: '3px 8px', borderRadius: '6px', color: 'var(--text-secondary)' }}>
+                        {record.entity_type.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span 
+                        style={{ 
+                          fontSize: '12px', 
+                          fontWeight: '700', 
+                          padding: '4px 10px', 
+                          borderRadius: '8px', 
+                          background: colorTheme.bg, 
+                          color: colorTheme.text,
+                          border: `1px solid ${colorTheme.border}`,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        {record.status.replace(/_/g, ' ')}
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Created: {new Date(record.created_at).toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', fontSize: '13px', background: 'rgba(0,0,0,0.2)', padding: '12px 16px', borderRadius: '10px' }}>
+                    <div>
+                      <span style={{ color: 'var(--text-secondary)' }}>Status Updated By: </span>
+                      <span style={{ color: 'var(--accent-secondary)', fontWeight: '600' }}>{record.status_changed_by || 'System'}</span>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-secondary)' }}>Status Updated At: </span>
+                      <span style={{ color: '#fff' }}>{record.status_changed_at ? new Date(record.status_changed_at).toLocaleString() : 'N/A'}</span>
+                    </div>
+                    {record.scheduled_purge_at && (
+                      <div>
+                        <span style={{ color: 'var(--warning)' }}>Scheduled Purge: </span>
+                        <span style={{ color: '#fff', fontWeight: '600' }}>{new Date(record.scheduled_purge_at).toLocaleString()}</span>
+                      </div>
+                    )}
+                    {record.purged_at && (
+                      <div>
+                        <span style={{ color: 'var(--error)' }}>Purged At: </span>
+                        <span style={{ color: '#fff', fontWeight: '600' }}>{new Date(record.purged_at).toLocaleString()} by {record.purged_by}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {record.reason && (
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontStyle: 'italic', paddingLeft: '4px' }}>
+                      <span style={{ fontStyle: 'normal', color: 'var(--text-primary)', fontWeight: '600' }}>Reason: </span>
+                      "{record.reason}"
+                    </div>
+                  )}
+
+                  {/* Actions Row */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => handleOpenAuditTrail(record)}
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        color: '#fff',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Eye size={13} /> View Audit Trail
+                    </button>
+
+                    {record.status === 'active' && (
+                      <>
+                        <button
+                          onClick={() => setActionModal({ type: 'archive', record, reason: 'Archiving record per policy' })}
+                          style={{
+                            background: 'rgba(14, 165, 233, 0.15)',
+                            color: 'var(--accent-secondary)',
+                            border: '1px solid rgba(14, 165, 233, 0.3)',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <Archive size={13} /> Archive
+                        </button>
+                        <button
+                          onClick={() => setActionModal({ type: 'request-delete', record, reason: 'Requesting deletion schedule' })}
+                          style={{
+                            background: 'rgba(245, 158, 11, 0.15)',
+                            color: 'var(--warning)',
+                            border: '1px solid rgba(245, 158, 11, 0.3)',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <Trash2 size={13} /> Request Delete
+                        </button>
+                      </>
+                    )}
+
+                    {record.status === 'archived' && (
+                      <>
+                        <button
+                          onClick={() => setActionModal({ type: 'restore', record, reason: 'Restoring record to active' })}
+                          style={{
+                            background: 'rgba(16, 185, 129, 0.15)',
+                            color: 'var(--success)',
+                            border: '1px solid rgba(16, 185, 129, 0.3)',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <RotateCcw size={13} /> Restore
+                        </button>
+                        <button
+                          onClick={() => setActionModal({ type: 'request-delete', record, reason: 'Requesting deletion schedule' })}
+                          style={{
+                            background: 'rgba(245, 158, 11, 0.15)',
+                            color: 'var(--warning)',
+                            border: '1px solid rgba(245, 158, 11, 0.3)',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <Trash2 size={13} /> Request Delete
+                        </button>
+                      </>
+                    )}
+
+                    {record.status === 'pending_deletion' && (
+                      <>
+                        <button
+                          onClick={() => setActionModal({ type: 'restore', record, reason: 'Cancelling deletion request and restoring' })}
+                          style={{
+                            background: 'rgba(16, 185, 129, 0.15)',
+                            color: 'var(--success)',
+                            border: '1px solid rgba(16, 185, 129, 0.3)',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <RotateCcw size={13} /> Restore
+                        </button>
+                        <button
+                          onClick={() => setActionModal({ type: 'approve-delete', record, reason: 'Controller permanent purge confirmed' })}
+                          disabled={currentRole !== 'controller'}
+                          title={currentRole !== 'controller' ? 'Only controller role can approve deletion' : 'Approve permanent deletion'}
+                          style={{
+                            background: currentRole === 'controller' ? 'rgba(244, 63, 94, 0.2)' : 'rgba(255,255,255,0.05)',
+                            color: currentRole === 'controller' ? 'var(--error)' : 'var(--text-secondary)',
+                            border: currentRole === 'controller' ? '1px solid rgba(244, 63, 94, 0.4)' : '1px solid rgba(255,255,255,0.1)',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            cursor: currentRole === 'controller' ? 'pointer' : 'not-allowed',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            opacity: currentRole === 'controller' ? 1 : 0.6
+                          }}
+                        >
+                          <Shield size={13} /> Approve Delete {currentRole !== 'controller' && '(Controller Only)'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Action Confirmation Modal */}
+        {actionModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div className="glass-panel animate-slide-in" style={{ width: '480px', maxWidth: '90vw', padding: '28px', background: '#121626' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '18px', textTransform: 'capitalize', color: '#fff' }}>
+                  Confirm {actionModal.type.replace(/-/g, ' ')}
+                </h3>
+                <button 
+                  onClick={() => setActionModal(null)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '20px' }}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+                Target Record: <strong style={{ color: '#fff' }}>{actionModal.record.id}</strong> ({actionModal.record.entity_type})
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Reason / Audit Justification:</label>
+                <textarea
+                  rows={3}
+                  value={actionModal.reason}
+                  onChange={(e) => setActionModal({ ...actionModal, reason: e.target.value })}
+                  placeholder="Enter reason for this action..."
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    background: 'rgba(0,0,0,0.3)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#fff',
+                    fontSize: '13px',
+                    resize: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  onClick={() => setActionModal(null)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn-primary"
+                  onClick={handleExecuteRetentionAction}
+                  style={{
+                    padding: '8px 18px',
+                    fontSize: '13px'
+                  }}
+                >
+                  Confirm Action
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Audit Trail Modal */}
+        {auditTrailModalRecord && (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div className="glass-panel animate-slide-in" style={{ width: '650px', maxWidth: '90vw', maxHeight: '80vh', display: 'flex', flexDirection: 'column', padding: '28px', background: '#121626' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <h3 style={{ fontSize: '18px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <History size={18} color="var(--accent-secondary)" /> Audit Trail Timeline
+                  </h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    Record ID: <strong style={{ color: '#fff' }}>{auditTrailModalRecord.id}</strong> ({auditTrailModalRecord.entity_type})
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setAuditTrailModalRecord(null)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '20px' }}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div style={{ overflowY: 'auto', flex: 1, paddingRight: '6px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {auditTrailLoading ? (
+                  <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-secondary)' }}>Loading audit history...</div>
+                ) : auditTrailList.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-secondary)' }}>No audit events found.</div>
+                ) : (
+                  auditTrailList.map((entry, idx) => (
+                    <div 
+                      key={entry.id || idx}
+                      style={{
+                        padding: '14px 16px',
+                        background: 'rgba(0,0,0,0.3)',
+                        borderRadius: '10px',
+                        borderLeft: '3px solid var(--accent-primary)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ textTransform: 'uppercase', fontWeight: '700', fontSize: '12px', color: 'var(--accent-secondary)' }}>
+                            {entry.action.replace(/_/g, ' ')}
+                          </span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                            ({entry.previous_status ? `${entry.previous_status} -> ` : ''}{entry.new_status})
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>
+                          Performed by: <strong style={{ color: '#fff' }}>{entry.performed_by}</strong>
+                        </span>
+                      </div>
+
+                      {entry.reason && (
+                        <div style={{ fontSize: '12px', color: '#cbd5e1', fontStyle: 'italic', marginTop: '2px' }}>
+                          "{entry.reason}"
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <button
+                  className="btn-primary"
+                  onClick={() => setAuditTrailModalRecord(null)}
+                  style={{ padding: '6px 16px', fontSize: '12px' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="app-container">
       {renderSidebar()}
@@ -1011,8 +1695,10 @@ export default function App() {
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'network' && renderNetworkTopology()}
         {activeTab === 'announcements' && renderAnnouncements()}
+        {activeTab === 'retention' && renderRetention()}
         {activeTab === 'settings' && renderSettings()}
         {activeTab === 'reports' && (
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px', height: '100%', overflowY: 'auto', flex: 1 }}>
             <h2 className="text-gradient" style={{ fontSize: '28px' }}>Incident History</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '10px' }}>A log of all AI-generated incident reports from this session.</p>

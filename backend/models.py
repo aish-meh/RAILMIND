@@ -60,3 +60,6 @@ class GraphState(TypedDict):
     announcements: List[Announcement]
     incident_explanation: Optional[str]
     logs: Annotated[List[AgentLog], operator.add]
+
+from retention import RetentionStatus, RetentionRole, RetentionRecord, RetentionAuditEntry, ReasonPayload
+
