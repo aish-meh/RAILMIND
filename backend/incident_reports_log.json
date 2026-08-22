@@ -3,5 +3,15 @@
     "id": "rep-1787404216",
     "created_at": "2026-08-22T13:10:16.934677+00:00",
     "content": "## Incident Report: Signal Failure\n**Time:** 2026-08-22 18:40\n**Severity:** Major\n**Primary Train:** Rajdhani Express (12302)\n**Location:** Prayagraj Junction\n**Delay:** 30 minutes\n\n### Financial & Operations Impact\n- **Stranded Passengers:** ~2,150\n- **Estimated Compensation / Loss:** ₹687,500 INR\n\n### Impact Summary\n- Cascading impact on 1 other trains.\n- New schedules generated and synchronized.\n- Station authorities notified."
+  },
+  {
+    "id": "rep-1787404626",
+    "created_at": "2026-08-22T13:17:06.067648+00:00",
+    "content": "## Incident Report: Signal Failure\n**Time:** 2026-08-22 18:47\n**Severity:** Critical\n**Primary Train:** Vande Bharat Express (22436)\n**Location:** New Delhi\n**Delay:** 30 minutes\n\n### Financial & Operations Impact\n- **Stranded Passengers:** ~3,000\n- **Estimated Compensation / Loss:** ₹900,000 INR\n\n### Impact Summary\n- Cascading impact on 2 other trains.\n- New schedules generated and synchronized.\n- Station authorities notified."
+  },
+  {
+    "id": "rep-1787406879",
+    "created_at": "2026-08-22T13:54:39.716462+00:00",
+    "content": "## Incident Report: Signal Failure\n**Time:** 2026-08-22 19:24\n**Severity:** Critical\n**Primary Train:** Vande Bharat Express (22436)\n**Location:** New Delhi\n**Delay:** 30 minutes\n\n### Financial & Operations Impact\n- **Stranded Passengers:** ~3,000\n- **Estimated Compensation / Loss:** ₹900,000 INR\n\n### Impact Summary\n- Cascading impact on 2 other trains.\n- New schedules generated and synchronized.\n- Station authorities notified."
   }
 ]

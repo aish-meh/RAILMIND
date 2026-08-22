@@ -1755,24 +1755,30 @@ export default function App() {
 
             
             {historicalReports.length === 0 ? (
-              <div className="glass-panel" style={{ padding: '40px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                  <History size={48} style={{ opacity: 0.5, margin: '0 auto 15px' }} />
-                  <h2>No Historical Data Yet</h2>
-                  <p>Run a simulation on the dashboard to generate reports.</p>
+              <div className="glass-panel" style={{ padding: '60px 40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                <div style={{ textAlign: 'center', color: '#64748B' }}>
+                  <History size={40} style={{ opacity: 0.4, margin: '0 auto 12px' }} />
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#0F172A' }}>No Historical Reports Yet</h3>
+                  <p style={{ fontSize: '13px', color: '#64748B', marginTop: '4px' }}>Run a simulation on the dashboard to generate incident reports.</p>
                 </div>
               </div>
             ) : (
               historicalReports.map(hr => (
-                <div key={hr.id} className="glass-panel" style={{ padding: '24px', borderLeft: '4px solid var(--accent-primary)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                      <Clock size={16} /> Generated: {hr.date}
+                <div key={hr.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', borderLeft: '4px solid #0B2545', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748B', fontSize: '12px', fontWeight: '600' }}>
+                      <Clock size={15} color="#0B2545" /> Generated: {hr.date}
                     </div>
                   </div>
-                  <pre style={{ whiteSpace: 'pre-wrap', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.6', fontFamily: 'inherit' }}>
-                    {hr.content}
-                  </pre>
+                  <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.6' }}>
+                    {hr.content.replace(/^##\s+/gm, '').replace(/\*\*(.*?)\*\*/g, '$1').split('\n').map((line, idx) => (
+                      line.trim() ? (
+                        <div key={idx} style={{ marginBottom: '6px', fontWeight: line.includes(':') ? '600' : '400' }}>
+                          {line}
+                        </div>
+                      ) : null
+                    ))}
+                  </div>
                 </div>
               ))
             )}
