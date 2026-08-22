@@ -358,14 +358,16 @@ select option {
 
 .main-content {
   flex: 1;
-  padding: 30px;
+  padding: 24px 32px 80px 32px;
   max-width: 1400px;
   margin: 0 auto;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .app-container {
@@ -989,7 +991,7 @@ input:checked + .slider:before {
   gap: 16px;
   min-height: 100%;
   width: 100%;
-  padding-bottom: 30px;
+  padding-bottom: 80px;
   position: relative;
 }
 
