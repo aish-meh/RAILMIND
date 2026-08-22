@@ -17,7 +17,8 @@ import {
   Database,
   Maximize2,
   X,
-  LogOut
+  LogOut,
+  Shield
 } from 'lucide-react';
 
 
@@ -194,6 +195,7 @@ export default function App() {
           ...prev
         ]);
         setIsProcessing(false);
+        setShowReportModal(true);
       }
     };
 
@@ -325,6 +327,9 @@ export default function App() {
     const synth = window.speechSynthesis;
     if (!synth) return;
 
+    const voices = synth.getVoices();
+    const hasLocalVoice = voices.length > 0;
+
     if (speechTimeoutRef.current) {
       clearTimeout(speechTimeoutRef.current);
       speechTimeoutRef.current = null;
@@ -361,17 +366,39 @@ export default function App() {
           advanceQueue();
         };
 
-        audio.onerror = (e) => {
-          console.warn("Backend TTS playback note:", e);
-          advanceQueue();
+        // If backend TTS fails (e.g. Google blocks the proxy), fall back to
+        // browser SpeechSynthesis using the best available voice.
+        audio.onerror = () => {
+          tryBrowserTTSFallback();
         };
 
-        audio.play().catch(err => {
-          console.warn("Audio autoplay policy note:", err);
-          advanceQueue();
+        audio.play().catch(() => {
+          tryBrowserTTSFallback();
         });
       } catch (err) {
         console.warn("TTS fallback execution notice:", err);
+        tryBrowserTTSFallback();
+      }
+    };
+
+    const tryBrowserTTSFallback = () => {
+      try {
+        const utterance = new SpeechSynthesisUtterance(item.text);
+        activeUtteranceRef.current = utterance;
+        const allVoices = synth.getVoices();
+        // Prefer a voice matching the language, fall back to any English voice
+        const preferred = allVoices.find(v =>
+          v.lang.startsWith(item.lang) || v.lang.includes(item.lang.split('-')[0])
+        ) || allVoices.find(v => v.lang.toLowerCase().startsWith('en')) || allVoices[0];
+        if (preferred) utterance.voice = preferred;
+        utterance.lang = item.lang;
+        utterance.rate = latestSettings.current.speechRate || 1.0;
+        utterance.pitch = latestSettings.current.speechPitch || 1.0;
+        utterance.onend = () => advanceQueue();
+        utterance.onerror = () => advanceQueue();
+        synth.speak(utterance);
+      } catch (err) {
+        console.warn("Browser TTS fallback failed:", err);
         advanceQueue();
       }
     };
@@ -1891,81 +1918,126 @@ export default function App() {
           style={{
             position: 'fixed',
             top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(6px)',
+            background: 'rgba(15, 23, 42, 0.4)',
+            backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1000,
-            padding: '24px'
+            padding: '24px',
+            animation: 'fadeIn 0.3s ease'
           }}
-          onClick={() => setShowReportModal(false)}
+          onClick={() => { setShowReportModal(false); clearSpeechQueue(); }}
         >
           <div 
-            className="animate-slide-in"
+            className="animate-slide-in glass-panel"
             style={{
-              background: '#FFFFFF',
-              borderRadius: '16px',
               width: '100%',
-              maxWidth: '720px',
-              maxHeight: '85vh',
+              maxWidth: '850px',
+              maxHeight: '90vh',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: '1px solid #CBD5E1',
-              overflow: 'hidden'
+              boxShadow: '0 25px 50px -12px rgba(11, 37, 69, 0.15)',
+              overflow: 'hidden',
+              position: 'relative',
+              background: '#FFFFFF'
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Top Accent Gradient */}
+            <div style={{ height: '4px', width: '100%', background: 'linear-gradient(90deg, #0B2545, #C5A059, #0284C7)' }}></div>
+
             {/* Modal Header */}
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ background: '#DCFCE7', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FileText size={20} color="#047857" />
+            <div style={{ padding: '24px 32px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: '#F8FAFC' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ 
+                  background: '#F1F5F9', 
+                  padding: '12px', 
+                  borderRadius: '12px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  border: '1px solid #E2E8F0'
+                }}>
+                  <Shield size={24} color="#0B2545" />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0F172A', margin: 0 }}>
-                    AI Comprehensive Incident Report
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748B', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    Executive Intelligence
+                  </div>
+                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0F172A', margin: 0, letterSpacing: '-0.5px' }}>
+                    Comprehensive Incident Report
                   </h3>
-                  <span style={{ fontSize: '12px', color: '#64748B' }}>
+                  <div style={{ fontSize: '13px', color: '#475569', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }}></span>
                     Generated by RailMind Recovery Orchestrator
-                  </span>
+                  </div>
                 </div>
               </div>
               <button 
-                onClick={() => setShowReportModal(false)}
-                style={{ background: '#F1F5F9', border: 'none', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
+                onClick={() => { setShowReportModal(false); clearSpeechQueue(); }}
+                style={{ 
+                  background: '#FFFFFF', 
+                  border: '1px solid #E2E8F0', 
+                  borderRadius: '10px', 
+                  width: '36px', 
+                  height: '36px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  cursor: 'pointer', 
+                  color: '#64748B',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.color = '#0F172A'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#64748B'; }}
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
+            <div style={{ padding: '32px', overflowY: 'auto', flex: 1, background: '#FFFFFF' }}>
               <pre style={{
                 whiteSpace: 'pre-wrap',
                 fontSize: '14px',
-                color: '#1E293B',
-                lineHeight: '1.7',
-                fontFamily: 'Inter, system-ui, sans-serif',
+                color: '#334155',
+                lineHeight: '1.8',
+                fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                 margin: 0,
                 background: '#F8FAFC',
-                padding: '20px',
-                borderRadius: '12px',
-                border: '1px solid #E2E8F0'
+                padding: '28px',
+                borderRadius: '16px',
+                border: '1px solid #E2E8F0',
+                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.02)'
               }}>
-                {report}
+                {report.split('\n').map((line, idx) => {
+                  if (line.trim().startsWith('##')) {
+                    return <div key={idx} style={{ color: '#0B2545', fontWeight: '800', fontSize: '16px', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px', display: 'inline-block' }}>{line.replace(/#/g, '').trim()}</div>;
+                  } else if (line.trim().startsWith('- **') || line.trim().startsWith('**')) {
+                    const parts = line.split('**');
+                    return (
+                      <div key={idx} style={{ marginBottom: '8px', paddingLeft: line.trim().startsWith('-') ? '16px' : '0' }}>
+                        {line.trim().startsWith('-') && <span style={{ color: '#0284C7', marginRight: '8px' }}>•</span>}
+                        {parts.map((part, i) => i % 2 === 1 ? <strong key={i} style={{ color: '#0F172A', fontWeight: '700' }}>{part}</strong> : part)}
+                      </div>
+                    );
+                  } else if (line.trim().length === 0) {
+                    return <div key={idx} style={{ height: '8px' }}></div>;
+                  }
+                  return <div key={idx} style={{ marginBottom: '4px' }}>{line}</div>;
+                })}
               </pre>
             </div>
 
             {/* Modal Footer */}
-            <div style={{ padding: '16px 24px', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'flex-end', background: '#F8FAFC' }}>
+            <div style={{ padding: '20px 32px', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'flex-end', background: '#F8FAFC' }}>
               <button 
-                className="btn-primary" 
-                onClick={() => setShowReportModal(false)}
-                style={{ padding: '8px 20px', fontSize: '13px' }}
+                onClick={() => { setShowReportModal(false); clearSpeechQueue(); }}
+                className="btn-primary"
               >
-                Close Report
+                Acknowledge & Close
               </button>
             </div>
           </div>

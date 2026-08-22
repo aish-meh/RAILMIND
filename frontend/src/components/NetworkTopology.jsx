@@ -432,8 +432,8 @@ export function NetworkTopology({
                           width="70"
                           height="20"
                           rx="10"
-                          fill="rgba(10, 14, 26, 0.85)"
-                          stroke="rgba(255, 255, 255, 0.1)"
+                          fill="var(--panel-bg)"
+                          stroke="var(--panel-border)"
                           strokeWidth="1"
                         />
                         <text
@@ -517,8 +517,8 @@ export function NetworkTopology({
                         width="44"
                         height="44"
                         rx="12"
-                        fill="rgba(15, 23, 42, 0.95)"
-                        stroke={isDelayed ? severityColor : isInspected ? "var(--accent-primary)" : "rgba(255,255,255,0.2)"}
+                        fill="var(--panel-bg)"
+                        stroke={isDelayed ? severityColor : isInspected ? "var(--accent-primary)" : "var(--panel-border)"}
                         strokeWidth={isOrigin ? "3" : isDelayed ? "2" : "1.5"}
                         filter="url(#neon-glow)"
                       />
@@ -538,7 +538,7 @@ export function NetworkTopology({
                         y1={stationY - 22}
                         x2={stationX}
                         y2={stationY - 48}
-                        stroke="rgba(255,255,255,0.3)"
+                        stroke="var(--panel-border)"
                         strokeWidth="2"
                       />
                       <rect
@@ -547,8 +547,8 @@ export function NetworkTopology({
                         width="14"
                         height="20"
                         rx="4"
-                        fill="#0b0f19"
-                        stroke="rgba(255,255,255,0.2)"
+                        fill="var(--bg-dark)"
+                        stroke="var(--panel-border)"
                       />
                       <circle
                         cx={stationX}
@@ -563,7 +563,7 @@ export function NetworkTopology({
                         x={stationX}
                         y={stationY - 76}
                         textAnchor="middle"
-                        fill={isDelayed ? severityColor : "#fff"}
+                        fill={isDelayed ? severityColor : "var(--text-primary)"}
                         fontSize="14"
                         fontWeight="800"
                         letterSpacing="1"
@@ -576,7 +576,7 @@ export function NetworkTopology({
                         x={stationX}
                         y={stationY + 44}
                         textAnchor="middle"
-                        fill="#f1f5f9"
+                        fill="var(--text-primary)"
                         fontSize="13"
                         fontWeight="600"
                       >
@@ -601,8 +601,8 @@ export function NetworkTopology({
                           width="50"
                           height="18"
                           rx="9"
-                          fill="rgba(255,255,255,0.05)"
-                          stroke="rgba(255,255,255,0.1)"
+                          fill="var(--bg-dark)"
+                          stroke="var(--panel-border)"
                         />
                         <text
                           x="25"
@@ -682,14 +682,14 @@ export function NetworkTopology({
                           width="110"
                           height="22"
                           rx="6"
-                          fill="rgba(10, 14, 26, 0.92)"
-                          stroke={isTrainAffected ? severityColor : "rgba(14, 165, 233, 0.5)"}
+                          fill="var(--panel-bg)"
+                          stroke={isTrainAffected ? severityColor : "var(--accent-tertiary)"}
                           strokeWidth="1"
                         />
                         <text
                           textAnchor="middle"
                           y="4"
-                          fill={isTrainAffected ? severityColor : "#38bdf8"}
+                          fill={isTrainAffected ? severityColor : "var(--text-primary)"}
                           fontSize="9.5"
                           fontWeight="700"
                         >
@@ -730,7 +730,7 @@ export function NetworkTopology({
               <div className="card-header-with-icon">
                 <Radio size={22} color={severityColor} />
                 <div>
-                  <h3 style={{ fontSize: '18px', color: '#fff' }}>
+                  <h3 style={{ fontSize: '18px', color: 'var(--text-primary)' }}>
                     Cascading Delay Ripple Propagation Engine
                   </h3>
                   <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
