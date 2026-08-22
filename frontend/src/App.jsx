@@ -869,19 +869,19 @@ export default function App() {
                   <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{log.agent}</span>
                   <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{log.timestamp}</span>
                 </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.5', fontWeight: '500' }}>
                   {log.message}
                 </div>
                 {log.details && (
-                  <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {Object.entries(log.details).map(([key, value]) => {
                       const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       
                       if (typeof value === 'object' && value !== null) {
                         return (
                           <div key={key} style={{ width: '100%', marginTop: '4px' }}>
-                            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>{formattedKey}:</div>
-                            <pre style={{ margin: 0, padding: '10px', background: 'rgba(0,0,0,0.4)', borderRadius: '8px', fontSize: '11px', color: 'var(--accent-secondary)', overflowX: 'auto', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ color: '#475569', fontSize: '11px', fontWeight: '600', marginBottom: '4px' }}>{formattedKey}:</div>
+                            <pre style={{ margin: 0, padding: '12px', background: '#0F172A', borderRadius: '8px', fontSize: '12px', color: '#38BDF8', border: '1px solid #1E293B', fontFamily: 'JetBrains Mono, monospace', overflowX: 'auto' }}>
                               {JSON.stringify(value, null, 2)}
                             </pre>
                           </div>
@@ -889,9 +889,9 @@ export default function App() {
                       }
                       
                       return (
-                        <div key={key} style={{ background: 'rgba(0,0,0,0.3)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', fontSize: '12px', display: 'flex', gap: '6px', fontStyle: 'normal' }}>
-                          <span style={{ color: 'var(--text-secondary)' }}>{formattedKey}:</span>
-                          <span style={{ color: 'var(--accent-secondary)', fontWeight: '600' }}>{String(value)}</span>
+                        <div key={key} style={{ background: '#F8FAFC', padding: '6px 12px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', gap: '6px', color: '#0F172A' }}>
+                          <span style={{ color: '#475569', fontWeight: '500' }}>{formattedKey}:</span>
+                          <span style={{ color: '#0B2545', fontWeight: '700' }}>{String(value)}</span>
                         </div>
                       );
                     })}

@@ -899,6 +899,86 @@ input:checked + .slider:before {
   box-shadow: 0 10px 24px rgba(11, 37, 69, 0.35);
 }
 
+/* Sidebar Multi-Language Voice Control High Contrast */
+.multilang-voice-control {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #FFFFFF;
+}
+
+.multilang-voice-control label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #C5A059;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.multilang-voice-control select {
+  background: #091D36;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
+.multilang-voice-control select option {
+  background: #0B2545;
+  color: #FFFFFF;
+}
+
+.voice-btn {
+  background: linear-gradient(135deg, #C5A059 0%, #D4AF37 100%);
+  color: #0B2545;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(197, 160, 89, 0.25);
+}
+
+.voice-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(197, 160, 89, 0.4);
+}
+
+.voice-btn.listening {
+  background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+  color: #FFFFFF;
+  animation: pulseGlow 1.5s infinite;
+}
+
+.command-hints {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #CBD5E1;
+}
+
+.command-hints strong {
+  color: #C5A059;
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.command-hints ul {
+  padding-left: 16px;
+  margin: 0;
+}
+
+.command-hints li {
+  color: #F1F5F9;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+
 /* ==========================================================================
    Advanced Cyberpunk Railway Network Topology Styles
    ========================================================================== */
