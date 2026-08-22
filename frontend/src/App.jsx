@@ -898,74 +898,96 @@ export default function App() {
         </div>
 
         {/* System State & Report */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minHeight: 0, overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: 0, overflowY: 'auto' }}>
           
-          <div className="glass-panel" style={{ padding: '28px', flex: 1, minHeight: '300px' }}>
-            <h2 style={{ fontSize: '22px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
-              <Clock size={24} color="var(--warning)" /> Updated Schedules
+          <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', color: '#0F172A', margin: 0 }}>
+              <Clock size={18} color="#D97706" /> Updated Schedules
             </h2>
             
-            {trains.map(t => {
-              const isAffected = reschedulePlan[t.id];
-              return (
-                <div 
-                  key={t.id} 
-                  className={`schedule-card ${isAffected ? (currentSeverity === 'Critical' ? 'border-severity-critical' : currentSeverity === 'Major' ? 'border-severity-major' : 'border-severity-minor') : ''}`}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                    <span style={{ fontWeight: '600' }}>{t.name}</span>
-                    <span 
-                      className={`status-badge ${isAffected ? 'status-delayed' : 'status-ontime'}`}
-                      style={isAffected ? {
-                        background: currentSeverity === 'Critical' ? 'var(--error-bg)' : currentSeverity === 'Major' ? 'var(--warning-bg)' : 'var(--success-bg)',
-                        color: currentSeverity === 'Critical' ? 'var(--error)' : currentSeverity === 'Major' ? 'var(--warning)' : 'var(--success)',
-                        borderColor: currentSeverity === 'Critical' ? 'rgba(244, 63, 94, 0.3)' : currentSeverity === 'Major' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'
-                      } : {}}
-                    >
-                      {isAffected ? 'Rescheduled' : 'On Time'}
-                    </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {trains.map(t => {
+                const isAffected = reschedulePlan[t.id];
+                return (
+                  <div 
+                    key={t.id} 
+                    className="schedule-card"
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '10px',
+                      padding: '14px 16px',
+                      marginBottom: 0,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ fontWeight: '600', fontSize: '14px', color: '#0F172A' }}>{t.name}</span>
+                      <span 
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          padding: '3px 10px',
+                          borderRadius: '12px',
+                          textTransform: 'uppercase',
+                          background: isAffected ? 'rgba(217, 119, 6, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                          color: isAffected ? '#D97706' : '#10B981'
+                        }}
+                      >
+                        {isAffected ? 'Rescheduled' : 'On Time'}
+                      </span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {t.route.map((st, i) => {
+                        const newTime = isAffected ? reschedulePlan[t.id][st] : null;
+                        const origTime = t.schedule[st];
+                        const timeChanged = newTime && newTime !== origTime;
+                        
+                        return (
+                          <div key={st} style={{ display: 'flex', alignItems: 'center', fontSize: '12px' }}>
+                            <span style={{ color: '#64748B' }}>{st}</span>
+                            <span style={{ color: timeChanged ? '#DC2626' : '#0F172A', marginLeft: '4px', fontWeight: timeChanged ? '600' : '400' }}>
+                              {timeChanged ? newTime : origTime}
+                            </span>
+                            {i < t.route.length - 1 && <ChevronRight size={12} color="#94A3B8" style={{ margin: '0 2px' }} />}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    {t.route.map((st, i) => {
-                      const newTime = isAffected ? reschedulePlan[t.id][st] : null;
-                      const origTime = t.schedule[st];
-                      const timeChanged = newTime && newTime !== origTime;
-                      
-                      return (
-                        <div key={st} style={{ display: 'flex', alignItems: 'center', fontSize: '13px' }}>
-                          <span style={{ color: 'var(--text-secondary)' }}>{st}</span>
-                          <span style={{ color: timeChanged ? (currentSeverity === 'Critical' ? 'var(--error)' : 'var(--warning)') : 'var(--text-primary)', marginLeft: '4px', fontWeight: timeChanged ? '600' : '400' }}>
-                            {timeChanged ? newTime : origTime}
-                          </span>
-                          {i < t.route.length - 1 && <ChevronRight size={14} color="var(--text-secondary)" style={{ margin: '0 4px' }} />}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {/* Incident Explanation System */}
           {currentExplanation && (
-            <div className={`glass-panel animate-slide-in ${currentSeverity === 'Critical' ? 'border-severity-critical' : currentSeverity === 'Major' ? 'border-severity-major' : 'border-severity-minor'}`} style={{ padding: '24px', background: 'rgba(255,255,255,0.01)' }}>
-              <h2 style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: currentSeverity === 'Critical' ? 'var(--error)' : currentSeverity === 'Major' ? 'var(--warning)' : 'var(--accent-secondary)' }}>
-                <AlertTriangle size={20} /> Incident Explanation
+            <div 
+              className="glass-panel animate-slide-in"
+              style={{
+                padding: '18px 20px',
+                background: '#FEF2F2',
+                border: '1px solid #FECACA',
+                borderRadius: '12px',
+                marginTop: '4px'
+              }}
+            >
+              <h2 style={{ fontSize: '14px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#DC2626' }}>
+                <AlertTriangle size={16} /> Incident Explanation
               </h2>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+              <p style={{ fontSize: '13px', color: '#475569', lineHeight: '1.5', margin: 0 }}>
                 {currentExplanation}
               </p>
             </div>
           )}
 
           {report && (
-            <div className="glass-panel animate-slide-in" style={{ padding: '28px', background: 'var(--success-bg)', borderColor: 'var(--success)', boxShadow: '0 0 30px rgba(16, 185, 129, 0.2)', overflowY: 'auto', flexShrink: 0, maxHeight: '40%' }}>
-              <h2 style={{ fontSize: '22px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: 'var(--success)' }}>
-                <FileText size={24} /> Incident Report
+            <div className="glass-panel animate-slide-in" style={{ padding: '20px', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '12px', overflowY: 'auto', maxHeight: '250px' }}>
+              <h2 style={{ fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#047857' }}>
+                <FileText size={18} /> Incident Report
               </h2>
-              <pre style={{ whiteSpace: 'pre-wrap', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6', fontFamily: 'inherit' }}>
+              <pre style={{ whiteSpace: 'pre-wrap', fontSize: '12px', color: '#1E293B', lineHeight: '1.5', fontFamily: 'inherit', margin: 0 }}>
                 {report}
               </pre>
             </div>
@@ -977,61 +999,67 @@ export default function App() {
   );
 
   const renderAnnouncements = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px', height: '100%', overflowY: 'auto', flex: 1 }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px 0', width: '100%', maxWidth: '1200px' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2 className="text-gradient" style={{ fontSize: '28px' }}>Announcement Audit Trail</h2>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>Log of all generated multi-lingual public address announcements.</p>
+          <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#0F172A', margin: 0 }}>Multi-Lingual Voice Broadcast Hub</h2>
+          <p style={{ color: '#64748B', fontSize: '13px', marginTop: '2px' }}>Real-time public address announcement synthesis & audit trail.</p>
         </div>
         {announcementsLog.length > 0 && (
           <button 
             className="btn-primary" 
             onClick={handleClearAnnouncements}
-            style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--error)', border: '1px solid rgba(244, 63, 94, 0.3)', boxShadow: 'none', padding: '10px 18px', fontSize: '14px' }}
+            style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', boxShadow: 'none', padding: '8px 14px', fontSize: '12px', borderRadius: '8px' }}
           >
-            <Trash2 size={16} style={{ marginRight: '8px', display: 'inline', verticalAlign: 'middle' }} /> Clear Audit Logs
+            <Trash2 size={14} style={{ marginRight: '6px', display: 'inline', verticalAlign: 'middle' }} /> Clear Audit Logs
           </button>
         )}
       </header>
       
       {announcementsLog.length === 0 ? (
-        <div className="glass-panel" style={{ padding: '40px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <Volume2 size={48} style={{ opacity: 0.5, margin: '0 auto 15px' }} />
-            <h2>No Announcement Logs</h2>
-            <p>Reschedule updates will generate public address announcements here.</p>
+        <div className="glass-panel" style={{ padding: '60px 40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+          <div style={{ textAlign: 'center', color: '#64748B' }}>
+            <Volume2 size={40} style={{ opacity: 0.4, margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#0F172A' }}>No Active Broadcast Logs</h3>
+            <p style={{ fontSize: '13px', color: '#64748B', marginTop: '4px' }}>Trigger a delay simulation to synthesize multi-lingual PA announcements.</p>
           </div>
         </div>
       ) : (
         announcementsLog.map((ann, idx) => (
-          <div key={idx} className="announcement-log-card" style={{ borderLeft: `4px solid ${ann.severity === 'Critical' ? 'var(--error)' : ann.severity === 'Major' ? 'var(--warning)' : 'var(--accent-secondary)'}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', borderLeft: `4px solid ${ann.severity === 'Critical' ? '#DC2626' : ann.severity === 'Major' ? '#D97706' : '#0284C7'}`, padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <span style={{ fontWeight: '700', fontSize: '16px', color: 'white' }}>{ann.train_name} ({ann.train_number})</span>
-                <span style={{ fontSize: '13px', color: 'var(--text-secondary)', marginLeft: '12px' }}>ETA {ann.new_time} at {ann.station_name}</span>
+                <span style={{ fontWeight: '700', fontSize: '15px', color: '#0F172A' }}>{ann.train_name} ({ann.train_number})</span>
+                <span style={{ fontSize: '12px', color: '#64748B', marginLeft: '12px', fontWeight: '500' }}>ETA {ann.new_time} at {ann.station_name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span className={`status-badge ${ann.severity === 'Critical' ? 'status-delayed' : ann.severity === 'Major' ? 'status-delayed' : 'status-ontime'}`} style={{ animation: 'none', background: ann.severity === 'Critical' ? 'var(--error-bg)' : ann.severity === 'Major' ? 'var(--warning-bg)' : 'var(--success-bg)', color: ann.severity === 'Critical' ? 'var(--error)' : ann.severity === 'Major' ? 'var(--warning)' : 'var(--success)', border: 'none' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '12px', background: ann.severity === 'Critical' ? '#FEF2F2' : '#FFFBEB', color: ann.severity === 'Critical' ? '#DC2626' : '#B45309' }}>
                   {ann.severity}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{ann.timestamp}</span>
+                <span style={{ fontSize: '11px', color: '#94A3B8', fontFamily: 'monospace' }}>{ann.timestamp}</span>
               </div>
             </div>
             
-            <div className="announcement-script-row">
-              <span className="lang-badge en">en</span> {ann.text_en}
-            </div>
-            <div className="announcement-script-row">
-              <span className="lang-badge hi">hi</span> {ann.text_hi}
-            </div>
-            <div className="announcement-script-row">
-              <span className="lang-badge ta">ta</span> {ann.text_ta}
-            </div>
-            {ann.text_ja && (
-              <div className="announcement-script-row">
-                <span className="lang-badge ja">ja</span> {ann.text_ja}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #F1F5F9' }}>
+                <span style={{ fontSize: '10px', fontWeight: '800', background: '#0B2545', color: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', marginRight: '8px' }}>EN</span>
+                <span style={{ fontSize: '13px', color: '#334155' }}>{ann.text_en}</span>
               </div>
-            )}
+              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #F1F5F9' }}>
+                <span style={{ fontSize: '10px', fontWeight: '800', background: '#C5A059', color: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', marginRight: '8px' }}>HI</span>
+                <span style={{ fontSize: '13px', color: '#334155' }}>{ann.text_hi}</span>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #F1F5F9' }}>
+                <span style={{ fontSize: '10px', fontWeight: '800', background: '#0284C7', color: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', marginRight: '8px' }}>TA</span>
+                <span style={{ fontSize: '13px', color: '#334155' }}>{ann.text_ta}</span>
+              </div>
+              {ann.text_ja && (
+                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #F1F5F9' }}>
+                  <span style={{ fontSize: '10px', fontWeight: '800', background: '#475569', color: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', marginRight: '8px' }}>JA</span>
+                  <span style={{ fontSize: '13px', color: '#334155' }}>{ann.text_ja}</span>
+                </div>
+              )}
+            </div>
           </div>
         ))
       )}
