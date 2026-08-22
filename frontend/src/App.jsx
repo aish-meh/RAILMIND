@@ -14,8 +14,11 @@ import {
   VolumeX, 
   Trash2, 
   Settings as SettingsIcon,
-  Database
+  Database,
+  Maximize2,
+  X
 } from 'lucide-react';
+
 
 import { MultiLanguageVoiceControl } from './components/MultiLanguageVoiceControl';
 import RetentionPanel from './components/RetentionPanel';
@@ -36,7 +39,9 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [reschedulePlan, setReschedulePlan] = useState({});
   const [report, setReport] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [historicalReports, setHistoricalReports] = useState([]);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeDelayStation, setActiveDelayStation] = useState(null);
 
@@ -307,8 +312,43 @@ export default function App() {
     const item = speechQueueRef.current[speechIndexRef.current];
     const currentIdx = speechIndexRef.current;
 
-    const voices = synth.getVoices();
-    const hasLocalVoice = voices.some(v => v.lang.toLowerCase().startsWith(item.lang.split('-')[0]) || v.lang.toLowerCase().includes(item.lang.split('-')[0]));
+    const advanceQueue = () => {
+      if (speechIndexRef.current === currentIdx) {
+        activeUtteranceRef.current = null;
+        speechIndexRef.current += 1;
+        speechTimeoutRef.current = setTimeout(() => {
+          playQueue();
+        }, 1500);
+      }
+    };
+
+    const tryBackendTTS = () => {
+      try {
+        const langCode = item.lang.split('-')[0];
+        const encodedText = encodeURIComponent(item.text);
+        const ttsUrl = `/api/tts?lang=${langCode}&text=${encodedText}`;
+        
+        const audio = new Audio(ttsUrl);
+        activeUtteranceRef.current = audio;
+
+        audio.onended = () => {
+          advanceQueue();
+        };
+
+        audio.onerror = (e) => {
+          console.warn("Backend TTS playback note:", e);
+          advanceQueue();
+        };
+
+        audio.play().catch(err => {
+          console.warn("Audio autoplay policy note:", err);
+          advanceQueue();
+        });
+      } catch (err) {
+        console.warn("TTS fallback execution notice:", err);
+        advanceQueue();
+      }
+    };
 
     if (hasLocalVoice) {
       const utterance = new SpeechSynthesisUtterance(item.text);
@@ -324,26 +364,15 @@ export default function App() {
       utterance.pitch = latestSettings.current.speechPitch || 1.0;
 
       utterance.onend = () => {
-        if (speechIndexRef.current === currentIdx) {
-          activeUtteranceRef.current = null;
-          speechIndexRef.current += 1;
-          speechTimeoutRef.current = setTimeout(() => {
-            playQueue();
-          }, 2000);
-        }
+        advanceQueue();
       };
 
       utterance.onerror = (e) => {
-        console.error("Speech Synthesis Error:", e);
-        if (speechIndexRef.current === currentIdx) {
-          activeUtteranceRef.current = null;
-          if (e.error !== 'interrupted' && e.error !== 'canceled') {
-            showToast("error", "TTS Playback Error", `Failed to speak in ${item.lang}. Fallback notification shown.`);
-          }
-          speechIndexRef.current += 1;
-          speechTimeoutRef.current = setTimeout(() => {
-            playQueue();
-          }, 2000);
+        console.warn("Speech synthesis note:", e);
+        if (e.error !== 'interrupted' && e.error !== 'canceled') {
+          tryBackendTTS();
+        } else {
+          advanceQueue();
         }
       };
 
@@ -358,48 +387,10 @@ export default function App() {
       };
       setTimeout(resumeSpeech, 10000);
     } else {
-      console.log(`No local voice found for ${item.lang}. Falling back to online TTS.`);
-      const langCode = item.lang.split('-')[0];
-      const encodedText = encodeURIComponent(item.text);
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encodedText}`;
-      
-      const audio = new Audio(ttsUrl);
-      activeUtteranceRef.current = audio;
-
-      audio.onended = () => {
-        if (speechIndexRef.current === currentIdx) {
-          activeUtteranceRef.current = null;
-          speechIndexRef.current += 1;
-          speechTimeoutRef.current = setTimeout(() => {
-            playQueue();
-          }, 2000);
-        }
-      };
-
-      audio.onerror = (e) => {
-        console.error("Audio TTS Error:", e);
-        if (speechIndexRef.current === currentIdx) {
-          activeUtteranceRef.current = null;
-          showToast("error", "TTS Playback Error", `Failed to speak in ${item.lang} via fallback API.`);
-          speechIndexRef.current += 1;
-          speechTimeoutRef.current = setTimeout(() => {
-            playQueue();
-          }, 2000);
-        }
-      };
-
-      audio.play().catch(err => {
-        console.error("Audio Play Error:", err);
-        if (speechIndexRef.current === currentIdx) {
-          activeUtteranceRef.current = null;
-          speechIndexRef.current += 1;
-          speechTimeoutRef.current = setTimeout(() => {
-            playQueue();
-          }, 2000);
-        }
-      });
+      tryBackendTTS();
     }
   };
+
 
   const enqueueAnnouncements = (newAnnouncements) => {
     if (!latestSettings.current.audioEnabled) {
@@ -988,15 +979,60 @@ export default function App() {
           )}
 
           {report && (
-            <div className="glass-panel animate-slide-in" style={{ padding: '20px', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '12px', overflowY: 'auto', maxHeight: '250px' }}>
-              <h2 style={{ fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#047857' }}>
-                <FileText size={18} /> Incident Report
-              </h2>
-              <pre style={{ whiteSpace: 'pre-wrap', fontSize: '12px', color: '#1E293B', lineHeight: '1.5', fontFamily: 'inherit', margin: 0 }}>
-                {report}
-              </pre>
+            <div 
+              className="glass-panel animate-slide-in" 
+              style={{ 
+                padding: '20px 22px', 
+                background: '#F0FDF4', 
+                border: '1.5px solid #86EFAC', 
+                borderRadius: '12px', 
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.08)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', color: '#047857', margin: 0 }}>
+                  <FileText size={18} /> Incident Report
+                </h2>
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  style={{
+                    background: '#DCFCE7',
+                    border: '1px solid #86EFAC',
+                    color: '#047857',
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  title="Expand to Fullscreen View"
+                >
+                  <Maximize2 size={13} /> Expand View
+                </button>
+              </div>
+
+              <div style={{ maxHeight: '280px', overflowY: 'auto', paddingRight: '6px' }}>
+                <pre style={{ 
+                  whiteSpace: 'pre-wrap', 
+                  fontSize: '13px', 
+                  color: '#1E293B', 
+                  lineHeight: '1.6', 
+                  fontFamily: 'Inter, system-ui, sans-serif', 
+                  margin: 0 
+                }}>
+                  {report}
+                </pre>
+              </div>
             </div>
           )}
+
 
         </div>
       </div>
@@ -1780,8 +1816,96 @@ export default function App() {
         )}
       </div>
 
+      {/* Fullscreen/Expanded Incident Report Modal */}
+      {showReportModal && report && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '24px'
+          }}
+          onClick={() => setShowReportModal(false)}
+        >
+          <div 
+            className="animate-slide-in"
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '720px',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #CBD5E1',
+              overflow: 'hidden'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ background: '#DCFCE7', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FileText size={20} color="#047857" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0F172A', margin: 0 }}>
+                    AI Comprehensive Incident Report
+                  </h3>
+                  <span style={{ fontSize: '12px', color: '#64748B' }}>
+                    Generated by RailMind Recovery Orchestrator
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowReportModal(false)}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
+              <pre style={{
+                whiteSpace: 'pre-wrap',
+                fontSize: '14px',
+                color: '#1E293B',
+                lineHeight: '1.7',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                margin: 0,
+                background: '#F8FAFC',
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid #E2E8F0'
+              }}>
+                {report}
+              </pre>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ padding: '16px 24px', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'flex-end', background: '#F8FAFC' }}>
+              <button 
+                className="btn-primary" 
+                onClick={() => setShowReportModal(false)}
+                style={{ padding: '8px 20px', fontSize: '13px' }}
+              >
+                Close Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Toast Notifications */}
       <div className="toast-container">
+
         {toastNotifications.map(t => (
           <div key={t.id} className={`toast toast-${t.type}`}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

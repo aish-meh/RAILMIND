@@ -1,10 +1,13 @@
 import asyncio
-from fastapi import FastAPI, BackgroundTasks, WebSocket, WebSocketDisconnect, Header, Query, HTTPException, Body
+import urllib.request
+import urllib.parse
+from fastapi import FastAPI, BackgroundTasks, WebSocket, WebSocketDisconnect, Header, Query, HTTPException, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 import json
+
 
 
 from models import DelayEvent, Train, Station
@@ -121,6 +124,24 @@ async def clear_incident_reports():
     INCIDENT_REPORTS = []
     save_incident_reports()
     return {"status": "Incident reports log cleared"}
+
+@app.get("/api/tts")
+async def get_tts_audio(text: str = Query(...), lang: str = Query("en")):
+    lang_code = lang.split("-")[0].lower()
+    encoded = urllib.parse.quote(text[:300])
+    url = f"https://translate.google.com/translate_tts?ie=UTF-8&tl={lang_code}&client=tw-ob&q={encoded}"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as response:
+            audio_bytes = response.read()
+            return Response(content=audio_bytes, media_type="audio/mpeg")
+    except Exception as e:
+        print(f"TTS Proxy Error: {e}")
+        raise HTTPException(status_code=502, detail="TTS service unavailable")
+
 
 
 # ---------------------------------------------------------------------------

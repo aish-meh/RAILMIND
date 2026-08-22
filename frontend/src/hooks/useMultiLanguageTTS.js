@@ -51,12 +51,12 @@ export const useMultiLanguageTTS = () => {
 
       synth.speak(utterance);
     } else {
-      console.log(`No local voice for ${language}. Falling back to Google TTS API.`);
       const langCode = config.lang.split('-')[0];
       const encodedText = encodeURIComponent(text);
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encodedText}`;
+      const ttsUrl = `/api/tts?lang=${langCode}&text=${encodedText}`;
       
       const audio = new Audio(ttsUrl);
+
       activeAudioRef.current = audio;
       
       audio.onplay = () => setIsSpeaking(true);
