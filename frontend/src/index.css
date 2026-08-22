@@ -814,6 +814,10 @@ input:checked + .slider:before {
 .executive-table-header {
   background: #F8FAFC;
   border-bottom: 1px solid #E2E8F0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .executive-table-header th {

@@ -16,6 +16,7 @@ import {
   TrainFront, 
   Mic,
   ArrowDown,
+  ArrowUp,
   Train
 } from 'lucide-react';
 
@@ -118,7 +119,42 @@ export default function RetentionPanel({ showToast }) {
   });
 
   const tableEndRef = useRef(null);
+  const containerRef = useRef(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const API_BASE = 'http://localhost:8001';
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      setIsScrolled(containerRef.current.scrollTop > 120);
+    } else {
+      setIsScrolled(window.scrollY > 120);
+    }
+  };
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (el) {
+      el.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      if (el) el.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const handleScrollToggle = () => {
+    if (isScrolled) {
+      if (containerRef.current) {
+        containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      if (tableEndRef.current) {
+        tableEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   // Fetch records from backend API endpoint with fallback
   const fetchRecords = async () => {
@@ -553,9 +589,13 @@ export default function RetentionPanel({ showToast }) {
 
       </div>
 
-      {/* Floating Scroll Indicator */}
-      <div className="executive-floating-btn" onClick={scrollToBottom} title="Scroll Down">
-        <ArrowDown size={20} />
+      {/* Dual-Direction Floating Scroll Indicator (Up & Down Toggle) */}
+      <div 
+        className="executive-floating-btn" 
+        onClick={handleScrollToggle} 
+        title={isScrolled ? "Scroll to Top" : "Scroll to Bottom"}
+      >
+        {isScrolled ? <ArrowUp size={20} /> : <ArrowDown size={20} />}
       </div>
 
       {/* Modal Dialogs */}
