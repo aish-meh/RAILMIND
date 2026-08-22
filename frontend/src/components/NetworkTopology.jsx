@@ -232,8 +232,73 @@ export function NetworkTopology({
         </div>
       </div>
 
+      {/* Corridor Disruption Injection Control Bar */}
+      <div className="topology-sim-bar glass-panel">
+        <div className="sim-bar-title">
+          <Sliders size={18} color="var(--accent-primary)" />
+          <span>Quick Corridor Disruption Injection:</span>
+        </div>
+
+        <div className="sim-bar-controls">
+          <div className="sim-ctrl-item">
+            <label>Train</label>
+            <select value={simTrain} onChange={(e) => setSimTrain(e.target.value)}>
+              {trains.map(t => (
+                <option key={t.id} value={t.id}>{t.name} ({t.number})</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="sim-ctrl-item">
+            <label>Location</label>
+            <select value={simStation} onChange={(e) => setSimStation(e.target.value)}>
+              {MAIN_CORRIDOR.map(code => (
+                <option key={code} value={code}>{STATION_METADATA[code]?.name} ({code})</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="sim-ctrl-item">
+            <label>Delay (Min)</label>
+            <input
+              type="number"
+              min="5"
+              max="180"
+              value={simDelay}
+              onChange={(e) => setSimDelay(parseInt(e.target.value) || 0)}
+              style={{ width: '80px' }}
+            />
+          </div>
+
+          <div className="sim-ctrl-item">
+            <label>Disruption Reason</label>
+            <select value={simReason} onChange={(e) => setSimReason(e.target.value)}>
+              <option value="Signal Failure">Signal Failure</option>
+              <option value="Track Maintenance">Track Maintenance</option>
+              <option value="Dense Fog / Weather">Dense Fog / Weather</option>
+              <option value="Locomotive Failure">Locomotive Failure</option>
+              <option value="Overhead Wire Defect">Overhead Wire Defect</option>
+            </select>
+          </div>
+
+          <button
+            className="btn-primary sim-btn"
+            onClick={handleTriggerSimulation}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <RefreshCw size={16} className="spin-icon" />
+            ) : (
+              <Sparkles size={16} />
+            )}
+            {isProcessing ? 'Processing AI Dispatch...' : 'Trigger Simulation'}
+          </button>
+        </div>
+      </div>
+
       {/* Main Interactive Display Area */}
       <div className="topology-main-viewport">
+
         {viewMode === 'schematic' && (
           <div className="schematic-canvas-card glass-panel">
             {/* SVG Interactive Canvas */}
@@ -873,70 +938,7 @@ export function NetworkTopology({
           </div>
         </div>
       )}
-
-      {/* Bottom Quick-Simulation Bar */}
-      <div className="topology-sim-bar glass-panel">
-        <div className="sim-bar-title">
-          <Sliders size={18} color="var(--accent-primary)" />
-          <span>Quick Corridor Disruption Injection:</span>
-        </div>
-
-        <div className="sim-bar-controls">
-          <div className="sim-ctrl-item">
-            <label>Train</label>
-            <select value={simTrain} onChange={(e) => setSimTrain(e.target.value)}>
-              {trains.map(t => (
-                <option key={t.id} value={t.id}>{t.name} ({t.number})</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="sim-ctrl-item">
-            <label>Location</label>
-            <select value={simStation} onChange={(e) => setSimStation(e.target.value)}>
-              {MAIN_CORRIDOR.map(code => (
-                <option key={code} value={code}>{STATION_METADATA[code]?.name} ({code})</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="sim-ctrl-item">
-            <label>Delay (Min)</label>
-            <input
-              type="number"
-              min="5"
-              max="180"
-              value={simDelay}
-              onChange={(e) => setSimDelay(parseInt(e.target.value) || 0)}
-              style={{ width: '80px' }}
-            />
-          </div>
-
-          <div className="sim-ctrl-item">
-            <label>Disruption Reason</label>
-            <select value={simReason} onChange={(e) => setSimReason(e.target.value)}>
-              <option value="Signal Failure">Signal Failure</option>
-              <option value="Track Maintenance">Track Maintenance</option>
-              <option value="Dense Fog / Weather">Dense Fog / Weather</option>
-              <option value="Locomotive Failure">Locomotive Failure</option>
-              <option value="Overhead Wire Defect">Overhead Wire Defect</option>
-            </select>
-          </div>
-
-          <button
-            className="btn-primary sim-btn"
-            onClick={handleTriggerSimulation}
-            disabled={isProcessing}
-          >
-            {isProcessing ? (
-              <RefreshCw size={16} className="spin-icon" />
-            ) : (
-              <Sparkles size={16} />
-            )}
-            {isProcessing ? 'Processing AI Dispatch...' : 'Trigger Simulation'}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
+

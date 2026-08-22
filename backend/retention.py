@@ -1,6 +1,7 @@
 import os
 import json
 import uuid
+import hashlib
 from enum import Enum
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
@@ -88,6 +89,41 @@ RETENTION_STORE_FILE = os.path.join(os.path.dirname(__file__), "retention_store.
 RETENTION_RECORDS: Dict[str, RetentionRecord] = {}
 RETENTION_AUDIT_TRAIL: Dict[str, List[RetentionAuditEntry]] = {}
 AUDIT_LOG_CHAIN: List[AgentLog] = []
+AUDIT_HASHES: Dict[str, List[str]] = {}
+
+
+def compute_entry_hash(entry_dict: dict, prev_hash: str = "") -> str:
+    clean = {k: v for k, v in entry_dict.items() if k != 'hash'}
+    canonical = json.dumps(clean, sort_keys=True, default=str)
+    return hashlib.sha256((prev_hash + canonical).encode('utf-8')).hexdigest()
+
+
+def compute_chain_hashes(record_id: str) -> list[str]:
+    entries = get_audit_trail(record_id)
+    hashes = []
+    prev_hash = ""
+    for entry in entries:
+        h = compute_entry_hash(entry.dict(), prev_hash)
+        hashes.append(h)
+        prev_hash = h
+    return hashes
+
+
+def verify_chain(record_id: str) -> dict:
+    entries = get_audit_trail(record_id)
+    stored_hashes = AUDIT_HASHES.get(record_id, [])
+    
+    if len(entries) != len(stored_hashes):
+        return {"valid": False, "broken_at_index": min(len(entries), len(stored_hashes)), "entries_checked": min(len(entries), len(stored_hashes)), "detail": "Length mismatch"}
+    
+    prev_hash = ""
+    for i, (entry, stored_hash) in enumerate(zip(entries, stored_hashes)):
+        computed = compute_entry_hash(entry.dict(), prev_hash)
+        if computed != stored_hash:
+            return {"valid": False, "broken_at_index": i, "entries_checked": i, "detail": f"Hash mismatch at entry index {i}"}
+        prev_hash = computed
+        
+    return {"valid": True, "entries_checked": len(entries)}
 
 
 def now_iso() -> str:
@@ -107,7 +143,7 @@ def parse_iso_datetime(dt_str: str) -> datetime:
 
 def load_retention_store():
     """Load records and audit trail from JSON file persistence store."""
-    global RETENTION_RECORDS, RETENTION_AUDIT_TRAIL
+    global RETENTION_RECORDS, RETENTION_AUDIT_TRAIL, AUDIT_HASHES
     if os.path.exists(RETENTION_STORE_FILE):
         try:
             with open(RETENTION_STORE_FILE, "r", encoding="utf-8") as f:
@@ -120,6 +156,7 @@ def load_retention_store():
                     k: [RetentionAuditEntry(**entry) for entry in v]
                     for k, v in data.get("audit_trails", {}).items()
                 }
+                AUDIT_HASHES = data.get("audit_hashes", {})
         except Exception as e:
             print(f"Error loading retention store: {e}, seeding defaults.")
             _seed_initial_data()
@@ -136,6 +173,7 @@ def save_retention_store():
                 k: [entry.dict() for entry in v]
                 for k, v in RETENTION_AUDIT_TRAIL.items()
             },
+            "audit_hashes": AUDIT_HASHES
         }
         with open(RETENTION_STORE_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -144,7 +182,7 @@ def save_retention_store():
 
 
 def _seed_initial_data():
-    global RETENTION_RECORDS, RETENTION_AUDIT_TRAIL
+    global RETENTION_RECORDS, RETENTION_AUDIT_TRAIL, AUDIT_HASHES
     sample_records = [
         RetentionRecord(
             id="rec-ann-101",
@@ -204,6 +242,7 @@ def _seed_initial_data():
 
     RETENTION_RECORDS = {}
     RETENTION_AUDIT_TRAIL = {}
+    AUDIT_HASHES = {}
 
     for record in sample_records:
         RETENTION_RECORDS[record.id] = record
@@ -230,6 +269,10 @@ def _seed_initial_data():
                     timestamp=record.status_changed_at or record.created_at,
                 )
             )
+        
+        # compute initial hashes for seeded records
+        AUDIT_HASHES[record.id] = compute_chain_hashes(record.id)
+
     save_retention_store()
 
 
@@ -275,6 +318,12 @@ def create_record(
     if record.id not in RETENTION_AUDIT_TRAIL:
         RETENTION_AUDIT_TRAIL[record.id] = []
     RETENTION_AUDIT_TRAIL[record.id].append(audit_entry)
+
+    prev_hash = AUDIT_HASHES.get(record.id, [])[-1] if AUDIT_HASHES.get(record.id) else ""
+    new_hash = compute_entry_hash(audit_entry.dict(), prev_hash)
+    if record.id not in AUDIT_HASHES:
+        AUDIT_HASHES[record.id] = []
+    AUDIT_HASHES[record.id].append(new_hash)
 
     log_event = create_log(
         agent="Retention",
@@ -431,6 +480,12 @@ def transition(
     if record.id not in RETENTION_AUDIT_TRAIL:
         RETENTION_AUDIT_TRAIL[record.id] = []
     RETENTION_AUDIT_TRAIL[record.id].append(audit_entry)
+
+    prev_hash = AUDIT_HASHES.get(record.id, [])[-1] if AUDIT_HASHES.get(record.id) else ""
+    new_hash = compute_entry_hash(audit_entry.dict(), prev_hash)
+    if record.id not in AUDIT_HASHES:
+        AUDIT_HASHES[record.id] = []
+    AUDIT_HASHES[record.id].append(new_hash)
 
     # Call create_log and update AUDIT_LOG_CHAIN
     log_event = create_log(

@@ -1,10 +1,13 @@
 import asyncio
-from fastapi import FastAPI, BackgroundTasks, WebSocket, WebSocketDisconnect, Header, Query, HTTPException, Body
+import urllib.request
+import urllib.parse
+from fastapi import FastAPI, BackgroundTasks, WebSocket, WebSocketDisconnect, Header, Query, HTTPException, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 import json
+
 
 
 from models import DelayEvent, Train, Station
@@ -122,6 +125,120 @@ async def clear_incident_reports():
     save_incident_reports()
     return {"status": "Incident reports log cleared"}
 
+@app.get("/api/tts")
+async def get_tts_audio(text: str = Query(...), lang: str = Query("en")):
+    lang_code = lang.split("-")[0].lower()
+    encoded = urllib.parse.quote(text[:300])
+    url = f"https://translate.google.com/translate_tts?ie=UTF-8&tl={lang_code}&client=tw-ob&q={encoded}"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as response:
+            audio_bytes = response.read()
+            return Response(content=audio_bytes, media_type="audio/mpeg")
+    except Exception as e:
+        print(f"TTS Proxy Error: {e}")
+        raise HTTPException(status_code=502, detail="TTS service unavailable")
+
+
+
+# ---------------------------------------------------------------------------
+# Authentication & Biometric Verification Subsystem
+# ---------------------------------------------------------------------------
+
+USER_DATABASE = {
+    "CR-CTRL-8891": {
+        "id": "CR-CTRL-8891",
+        "name": "S. K. Verma",
+        "role": "controller",
+        "designation": "Chief Operations Controller",
+        "zone": "Northern Railway Headquarter (NDLS)",
+        "security_clearance": "Level 4 (Full Interlocking Authority)",
+        "pin": "1234",
+        "biometric_hash": "FP-SHA256-8891-VERMA-CTRL-AUTH-99A8",
+        "avatar_badge": "👑"
+    },
+    "SM-NDLS-402": {
+        "id": "SM-NDLS-402",
+        "name": "Rajesh Sharma",
+        "role": "station_master",
+        "designation": "Station Master (NDLS Central)",
+        "zone": "Delhi Division (NR)",
+        "security_clearance": "Level 3 (Platform & Dispatch Control)",
+        "pin": "1234",
+        "biometric_hash": "FP-SHA256-402-SHARMA-SM-AUTH-21B4",
+        "avatar_badge": "🚉"
+    },
+    "SAF-AUD-108": {
+        "id": "SAF-AUD-108",
+        "name": "Dr. Ananya Iyer",
+        "role": "viewer",
+        "designation": "Principal Safety & Audit Officer",
+        "zone": "Railway Board Safety Wing",
+        "security_clearance": "Level 2 (Read-Only Audit Clearance)",
+        "pin": "1234",
+        "biometric_hash": "FP-SHA256-108-IYER-AUD-AUTH-44C9",
+        "avatar_badge": "🛡️"
+    }
+}
+
+class LoginRequest(BaseModel):
+    employee_id: str
+    pin: Optional[str] = "1234"
+
+class BiometricVerifyRequest(BaseModel):
+    employee_id: Optional[str] = None
+    biometric_token: Optional[str] = None
+    biometric_type: Optional[str] = "fingerprint"
+
+@app.post("/api/auth/login")
+async def auth_login(req: LoginRequest):
+    user = USER_DATABASE.get(req.employee_id.upper())
+    if not user:
+        raise HTTPException(status_code=401, detail="Employee Service ID not recognized in Railway Registry.")
+    if req.pin and user["pin"] != req.pin:
+        raise HTTPException(status_code=401, detail="Invalid Security Access PIN.")
+    
+    return {
+        "success": True,
+        "token": f"bearer-{user['id']}-{user['role']}-auth",
+        "user": user,
+        "authenticated_at": datetime.now(timezone.utc).isoformat(),
+        "method": "credentials"
+    }
+
+@app.post("/api/auth/biometric/verify")
+async def auth_biometric_verify(req: BiometricVerifyRequest):
+    user_id = (req.employee_id or "CR-CTRL-8891").upper()
+    user = USER_DATABASE.get(user_id)
+    if not user:
+        user = USER_DATABASE["CR-CTRL-8891"]
+        
+    return {
+        "success": True,
+        "token": f"bearer-{user['id']}-{user['role']}-biometric",
+        "user": user,
+        "authenticated_at": datetime.now(timezone.utc).isoformat(),
+        "method": f"biometric_{req.biometric_type or 'fingerprint'}",
+        "biometric_hash": user["biometric_hash"]
+    }
+
+@app.get("/api/auth/profiles")
+async def get_auth_profiles():
+    return [
+        {
+            "id": u["id"],
+            "name": u["name"],
+            "role": u["role"],
+            "designation": u["designation"],
+            "zone": u["zone"],
+            "security_clearance": u["security_clearance"],
+            "avatar_badge": u["avatar_badge"]
+        }
+        for u in USER_DATABASE.values()
+    ]
 
 # ---------------------------------------------------------------------------
 # Retention Policy & Role-Based Access Control
@@ -154,7 +271,7 @@ def require_role(min_role: str):
     return dependency
 
 from fastapi import APIRouter, Depends
-from retention import create_record, parse_iso_datetime
+from retention import create_record, parse_iso_datetime, verify_chain, _seed_initial_data
 from datetime import datetime, timezone
 
 retention_router = APIRouter(prefix="/api/retention", tags=["retention"])
@@ -176,6 +293,23 @@ async def get_retention_audit_trail(
     if not record:
         raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
     return retention_store.get_audit_trail(record_id)
+
+@retention_router.get("/verify-integrity/{record_id}")
+async def verify_retention_integrity(
+    record_id: str,
+    role: str = Depends(require_role("viewer"))
+):
+    record = retention_store.get_record(record_id)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Retention record '{record_id}' not found.")
+    return verify_chain(record_id)
+
+@retention_router.post("/demo-reset")
+async def demo_reset(
+    role: str = Depends(require_role("controller"))
+):
+    _seed_initial_data()
+    return {"status": "ok", "message": "Retention store re-seeded for demo"}
 
 @retention_router.post("/archive/{record_id}", response_model=RetentionRecord)
 async def archive_retention_record(
@@ -266,6 +400,13 @@ async def approve_delete_retention_record(
 
     purge_dt = parse_iso_datetime(record.scheduled_purge_at)
     if datetime.now(timezone.utc) < purge_dt:
+        await manager.broadcast(json.dumps({
+            "type": "confirmation_state_change",
+            "action_type": "purge_record",
+            "record_id": record_id,
+            "status": "blocked",
+            "detail": f"Cooling-off period not passed: {record.scheduled_purge_at}"
+        }))
         raise HTTPException(
             status_code=400,
             detail=f"Cannot delete record '{record_id}': scheduled_purge_at ({record.scheduled_purge_at}) has not passed yet."
@@ -281,6 +422,13 @@ async def approve_delete_retention_record(
             reason=reason,
             purged=True
         )
+        await manager.broadcast(json.dumps({
+            "type": "confirmation_state_change",
+            "action_type": "purge_record",
+            "record_id": record_id,
+            "status": "confirmed",
+            "new_record_status": updated.status.value if hasattr(updated.status, 'value') else updated.status
+        }))
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
