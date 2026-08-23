@@ -501,6 +501,30 @@ async def generate_announcement(event: DelayEvent):
     }
     result = await graph_app.ainvoke(initial_state)
     announcements = [ann.dict() if hasattr(ann, 'dict') else ann for ann in result.get("announcements", [])]
+    
+    if announcements:
+        ANNOUNCEMENTS_LOG.extend(announcements)
+        save_announcements()
+        
+        ann_record = create_record(
+            entity_type="announcement",
+            content_ref=announcements,
+            actor="system",
+            reason="Automated announcement batch generated during simulation"
+        )
+        for ann in announcements:
+            if isinstance(ann, dict):
+                ann['retention_record_id'] = ann_record.id
+                
+        await manager.broadcast(json.dumps({
+            "type": "announcements",
+            "data": announcements
+        }))
+        await manager.broadcast(json.dumps({
+            "type": "retention_update",
+            "data": ann_record.dict()
+        }))
+
     return {
         "severity": result.get("severity", "Minor"),
         "incident_explanation": result.get("incident_explanation"),

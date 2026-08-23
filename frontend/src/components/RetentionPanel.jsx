@@ -290,17 +290,12 @@ export default function RetentionPanel({ showToast, currentRole }) {
     }
   };
 
-  // Fetch records from backend API endpoint with fallback
+  // Fetch all records from backend API endpoint with fallback
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      let url = `${API_BASE}/api/retention/records`;
-      const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-      if (entityFilter !== 'all') params.append('entity_type', entityFilter);
-      if (params.toString()) url += `?${params.toString()}`;
-
-      const res = await fetch(url, {
+      // Fetch all records (unfiltered) so statusCounts metrics always show true total counts
+      const res = await fetch(`${API_BASE}/api/retention/records`, {
         headers: { 'X-Role': currentRole },
         cache: 'no-store'
       });
@@ -324,14 +319,7 @@ export default function RetentionPanel({ showToast, currentRole }) {
     } catch (err) {
       console.warn("Backend API unavailable, using local state:", err.message);
       setIsLiveConnected(false);
-      let filteredMock = [...INITIAL_MOCK_RECORDS];
-      if (statusFilter !== 'all') {
-        filteredMock = filteredMock.filter(r => r.status === statusFilter);
-      }
-      if (entityFilter !== 'all') {
-        filteredMock = filteredMock.filter(r => r.entity_type === entityFilter);
-      }
-      setRecords(filteredMock);
+      setRecords([...INITIAL_MOCK_RECORDS]);
     } finally {
       setLoading(false);
     }
@@ -339,9 +327,9 @@ export default function RetentionPanel({ showToast, currentRole }) {
 
   useEffect(() => {
     fetchRecords();
-  }, [statusFilter, entityFilter, currentRole]);
+  }, [currentRole]);
 
-  // Status counts metrics
+  // Status counts metrics (calculated from complete record set)
   const statusCounts = {
     active: records.filter(r => r.status === 'active').length,
     pending_deletion: records.filter(r => r.status === 'pending_deletion').length,
@@ -391,26 +379,23 @@ export default function RetentionPanel({ showToast, currentRole }) {
     try {
       const res = await fetch(`${API_BASE}/api/retention/${endpoint}/${record.id}`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-Role': currentRole
-        },
-        body: JSON.stringify({ reason: reason || (type === 'archive' ? 'Manual archiving' : 'Deletion requested') })
+        headers: { 'Content-Type': 'application/json', 'X-Role': currentRole },
+        body: JSON.stringify({ reason: reason || `Action '${type}' executed by ${currentRole}` })
       });
 
       if (res.ok) {
         const updated = await res.json();
         setRecords(prev => prev.map(r => r.id === updated.id ? { ...r, ...updated } : r));
-        if (showToast) showToast('success', 'Action Verified', `Record ${record.id} set to ${updated.status}.`);
+        if (showToast) showToast('success', 'Status Updated', `Record ${record.id} set to ${updated.status}.`);
       } else {
-        const errData = await res.json();
-        throw new Error(errData.detail || 'Action failed');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `${type} failed`);
       }
     } catch (err) {
-      console.warn("API request fallback:", err.message);
+      // Fallback local update
       const newStatus = type === 'archive' ? 'archived' : 'pending_deletion';
-      setRecords(prev => prev.map(r => r.id === record.id ? { ...r, status: newStatus, reason } : r));
-      if (showToast) showToast('info', 'Record Updated', `Record ${record.id} set to ${newStatus}.`);
+      setRecords(prev => prev.map(r => r.id === record.id ? { ...r, status: newStatus } : r));
+      if (showToast) showToast('info', 'Status Updated', `Record ${record.id} set to ${newStatus}.`);
     } finally {
       setActionModal({ open: false, type: null, record: null, reason: '' });
     }
@@ -461,12 +446,16 @@ export default function RetentionPanel({ showToast, currentRole }) {
   const handleViewAuditTrail = async (record) => {
     setAuditDrawer({ open: true, record, trail: [], loading: true, integrityStatus: null, integrityDetail: null });
     try {
-      const res = await fetch(`${API_BASE}/api/retention/audit-trail/${record.id}`);
+      const res = await fetch(`${API_BASE}/api/retention/audit-trail/${record.id}`, {
+        headers: { 'X-Role': currentRole }
+      });
       if (res.ok) {
         const data = await res.json();
         setAuditDrawer(prev => ({ ...prev, trail: data, loading: false }));
+        // Automatically check integrity when audit trail opens
+        handleVerifyIntegrity(record.id);
       } else {
-        throw new Error("Audit fetch failed");
+        throw new Error("Failed to fetch audit trail");
       }
     } catch (err) {
       setAuditDrawer(prev => ({
@@ -514,14 +503,18 @@ export default function RetentionPanel({ showToast, currentRole }) {
   };
 
   const filteredRecords = records.filter(r => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      r.id.toLowerCase().includes(q) ||
-      (r.short_hash && r.short_hash.toLowerCase().includes(q)) ||
-      (r.title && r.title.toLowerCase().includes(q)) ||
-      r.status.toLowerCase().includes(q)
-    );
+    if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+    if (entityFilter !== 'all' && r.entity_type !== entityFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        r.id.toLowerCase().includes(q) ||
+        (r.short_hash && r.short_hash.toLowerCase().includes(q)) ||
+        (r.title && r.title.toLowerCase().includes(q)) ||
+        r.status.toLowerCase().includes(q)
+      );
+    }
+    return true;
   });
 
   const canArchive = currentRole === 'station_master' || currentRole === 'controller';
