@@ -94,10 +94,7 @@ const INITIAL_MOCK_RECORDS = [
 
 const COUNTDOWN_SECONDS = 10;
 
-export default function RetentionPanel({ showToast }) {
-  // Active role state: 'viewer' | 'station_master' | 'controller'
-  const [currentRole, setCurrentRole] = useState('station_master');
-  
+export default function RetentionPanel({ showToast, currentRole }) {
   // Record state - initialized with mock data array
   const [records, setRecords] = useState(INITIAL_MOCK_RECORDS);
   const [loading, setLoading] = useState(false);
@@ -225,6 +222,8 @@ export default function RetentionPanel({ showToast }) {
                 return prev;
               });
             }
+          } else if (msg.type === 'retention_update') {
+            setRecords(prev => prev.map(r => r.id === msg.data.id ? { ...r, ...msg.data } : r));
           }
         } catch (e) {
           // ignore non-JSON messages
@@ -302,7 +301,8 @@ export default function RetentionPanel({ showToast }) {
       if (params.toString()) url += `?${params.toString()}`;
 
       const res = await fetch(url, {
-        headers: { 'X-Role': currentRole }
+        headers: { 'X-Role': currentRole },
+        cache: 'no-store'
       });
       if (res.ok) {
         const data = await res.json();
@@ -343,10 +343,10 @@ export default function RetentionPanel({ showToast }) {
 
   // Status counts metrics
   const statusCounts = {
-    active: records.filter(r => r.status === 'active').length || 128,
-    pending_deletion: records.filter(r => r.status === 'pending_deletion').length || 4,
-    archived: records.filter(r => r.status === 'archived').length || 37,
-    deleted: records.filter(r => r.status === 'deleted').length || 12,
+    active: records.filter(r => r.status === 'active').length,
+    pending_deletion: records.filter(r => r.status === 'pending_deletion').length,
+    archived: records.filter(r => r.status === 'archived').length,
+    deleted: records.filter(r => r.status === 'deleted').length,
   };
 
 
@@ -608,24 +608,21 @@ export default function RetentionPanel({ showToast }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginTop: '10px' }}>
           
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button 
-              className={`executive-role-pill ${currentRole === 'viewer' ? 'active' : ''}`}
-              onClick={() => setCurrentRole('viewer')}
-            >
-              VIEWER · L1
-            </button>
-            <button 
-              className={`executive-role-pill ${currentRole === 'station_master' ? 'active' : ''}`}
-              onClick={() => setCurrentRole('station_master')}
-            >
-              STATION MASTER · L2
-            </button>
-            <button 
-              className={`executive-role-pill ${currentRole === 'controller' ? 'active' : ''}`}
-              onClick={() => setCurrentRole('controller')}
-            >
-              CONTROLLER · L3
-            </button>
+            {currentRole === 'viewer' && (
+              <button className="executive-role-pill active" style={{ cursor: 'default' }}>
+                VIEWER · L1
+              </button>
+            )}
+            {currentRole === 'station_master' && (
+              <button className="executive-role-pill active" style={{ cursor: 'default' }}>
+                STATION MASTER · L2
+              </button>
+            )}
+            {currentRole === 'controller' && (
+              <button className="executive-role-pill active" style={{ cursor: 'default' }}>
+                CONTROLLER · L3
+              </button>
+            )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', fontWeight: '700', color: '#047857' }}>
@@ -735,47 +732,63 @@ export default function RetentionPanel({ showToast }) {
                           
                           {/* Archive Action */}
                           <button
-                            title="Archive Record"
+                            title={currentRole === 'viewer' ? "Requires station master or controller role." : "Archive Record"}
                             className="executive-action-btn"
-                            disabled={!canArchive || !isActive}
+                            disabled={currentRole === 'viewer' || !isActive}
+                            style={{ opacity: currentRole === 'viewer' ? 0.5 : 1, cursor: currentRole === 'viewer' ? 'not-allowed' : 'pointer' }}
                             onClick={() => handleOpenActionModal('archive', rec)}
                           >
                             <Archive size={17} />
                           </button>
 
-                          {/* Request Delete Action */}
-                          <button
-                            title="Request Deletion"
-                            className="executive-action-btn"
-                            disabled={!canRequestDelete || isPending || isDeleted}
-                            onClick={() => handleOpenActionModal('request-delete', rec)}
-                          >
-                            <Trash2 size={17} />
-                          </button>
+                          {/* Request / Approve Delete Action */}
+                          {currentRole === 'controller' && isPending ? (
+                            <button
+                              title="Approve Permanent Deletion"
+                              className="executive-action-btn"
+                              disabled={false}
+                              onClick={() => handleApproveDelete(rec)}
+                            >
+                              <CheckCircle2 size={17} color="#DC2626" />
+                            </button>
+                          ) : (
+                            <button
+                              title={currentRole === 'viewer' ? "Requires station master or controller role." : "Request Deletion"}
+                              className="executive-action-btn"
+                              disabled={currentRole === 'viewer' || isPending || isDeleted}
+                              style={{ opacity: currentRole === 'viewer' ? 0.5 : 1, cursor: currentRole === 'viewer' ? 'not-allowed' : 'pointer' }}
+                              onClick={() => handleOpenActionModal('request-delete', rec)}
+                            >
+                              <Trash2 size={17} />
+                            </button>
+                          )}
 
                           {/* Restore Action */}
                           <button
-                            title="Restore Record"
+                            title={currentRole === 'viewer' ? "Requires station master or controller role." : "Restore Record"}
                             className="executive-action-btn"
-                            disabled={!canRestore || (!isArchived && !isPending)}
+                            disabled={currentRole === 'viewer' || (!isArchived && !isPending)}
+                            style={{ opacity: currentRole === 'viewer' ? 0.5 : 1, cursor: currentRole === 'viewer' ? 'not-allowed' : 'pointer' }}
                             onClick={() => handleRestore(rec)}
                           >
                             <RotateCcw size={17} />
                           </button>
 
-                          {/* Approve Delete Action — now opens countdown modal */}
+                          {/* Verify Integrity Action */}
                           <button
-                            title="Approve Purge (Controller)"
+                            title="Verify Integrity"
                             className="executive-action-btn"
-                            disabled={!canApproveDelete || !isPending}
-                            onClick={() => handleApproveDelete(rec)}
+                            onClick={() => {
+                              handleViewAuditTrail(rec);
+                              setTimeout(() => handleVerifyIntegrity(rec.id), 100);
+                            }}
                           >
-                            <ShieldAlert size={17} color={canApproveDelete && isPending ? '#DC2626' : undefined} />
+                            <ShieldAlert size={17} />
                           </button>
 
-                          {/* View Log — now opens drawer */}
+                          {/* View Log */}
                           <button
-                            title="Audit Trail Log"
+                            title="View Details"
                             className="executive-action-btn"
                             onClick={() => handleViewAuditTrail(rec)}
                           >

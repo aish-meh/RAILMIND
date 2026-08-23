@@ -18,7 +18,8 @@ import {
   Maximize2,
   X,
   LogOut,
-  Shield
+  Shield,
+  Archive
 } from 'lucide-react';
 
 
@@ -149,19 +150,20 @@ export default function App() {
       })
       .catch(err => console.error("Error fetching state:", err));
 
-    fetch('/api/announcements')
+    fetch('/api/announcements', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => setAnnouncementsLog(data))
       .catch(err => console.error("Error fetching announcements:", err));
 
-    fetch('/api/incident-reports')
+    fetch('/api/incident-reports', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           const formatted = data.map(item => ({
             id: item.id || Date.now(),
             date: item.created_at ? new Date(item.created_at).toLocaleString() : new Date().toLocaleString(),
-            content: item.content
+            content: item.content,
+            retention_record_id: item.retention_record_id
           })).reverse();
           setHistoricalReports(formatted);
         }
@@ -189,13 +191,43 @@ export default function App() {
           enqueueAnnouncements(msg.data);
         }
       } else if (msg.type === 'report') {
+        const newReport = {
+          id: `rep-${Date.now()}`,
+          date: new Date().toLocaleDateString(),
+          content: msg.data,
+          retention_record_id: msg.retention_record_id
+        };
+        setHistoricalReports(prev => [newReport, ...prev]);
         setReport(msg.data);
-        setHistoricalReports(prev => [
-          { id: Date.now(), date: new Date().toLocaleString(), content: msg.data },
-          ...prev
-        ]);
         setIsProcessing(false);
         setShowReportModal(true);
+      } else if (msg.type === 'retention_update') {
+        const record = msg.data;
+        if (record.status !== 'active') {
+          setHistoricalReports(prev => prev.filter(r => r.retention_record_id !== record.id));
+          setAnnouncementsLog(prev => prev.filter(a => a.retention_record_id !== record.id));
+        } else {
+          if (record.entity_type === 'incident_report') {
+            fetch('/api/incident-reports', { cache: 'no-store' })
+              .then(res => res.json())
+              .then(data => {
+                if (Array.isArray(data)) {
+                  const formatted = data.map(item => ({
+                    id: item.id || Date.now(),
+                    date: item.created_at ? new Date(item.created_at).toLocaleString() : new Date().toLocaleString(),
+                    content: item.content,
+                    retention_record_id: item.retention_record_id
+                  })).reverse();
+                  setHistoricalReports(formatted);
+                }
+              });
+          }
+          if (record.entity_type === 'announcement') {
+            fetch('/api/announcements', { cache: 'no-store' })
+              .then(res => res.json())
+              .then(data => setAnnouncementsLog(data));
+          }
+        }
       }
     };
 
@@ -222,10 +254,16 @@ export default function App() {
       if (filterEntityType) params.append('entity_type', filterEntityType);
       const queryStr = params.toString() ? `?${params.toString()}` : '';
       const res = await fetch(`/api/retention/records${queryStr}`, {
-        headers: { 'X-Role': currentRole }
+        headers: { 'X-Role': currentRole },
+        cache: 'no-store'
       });
       if (res.ok) {
         const data = await res.json();
+        data.sort((a, b) => {
+          const timeA = new Date(a.status_changed_at || a.created_at).getTime();
+          const timeB = new Date(b.status_changed_at || b.created_at).getTime();
+          return timeB - timeA;
+        });
         setRetentionRecords(data);
       } else {
         const err = await res.json().catch(() => ({}));
@@ -498,7 +536,11 @@ export default function App() {
 
   const handleClearAnnouncements = async () => {
     try {
-      await fetch('/api/clear-announcements', { method: 'POST' });
+      const res = await fetch('/api/clear-announcements', { 
+        method: 'POST',
+        headers: { 'X-Role': currentRole }
+      });
+      if (!res.ok) throw new Error('Failed to clear announcements');
       setAnnouncementsLog([]);
       showToast("success", "Logs Cleared", "Successfully cleared all announcement audit logs.");
     } catch (err) {
@@ -509,12 +551,80 @@ export default function App() {
 
   const handleClearIncidentReports = async () => {
     try {
-      await fetch('/api/clear-incident-reports', { method: 'POST' });
+      const res = await fetch('/api/clear-incident-reports', { 
+        method: 'POST',
+        headers: { 'X-Role': currentRole }
+      });
+      if (!res.ok) throw new Error('Failed to clear incident reports');
       setHistoricalReports([]);
       showToast("success", "History Cleared", "Successfully cleared all historical incident reports.");
     } catch (err) {
       console.error(err);
       showToast("error", "Error", "Failed to clear incident reports.");
+    }
+  };
+
+  const handleArchiveRecord = async (recordId, type) => {
+    if (!recordId) {
+       showToast("error", "Error", "No retention record ID found.");
+       return;
+    }
+    try {
+      const res = await fetch(`/api/retention/archive/${recordId}`, { 
+        method: 'POST', 
+        headers: { 
+          'X-Role': currentRole,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to archive: ${res.status} ${errorText}`);
+      }
+      
+      if (type === 'announcement') {
+        setAnnouncementsLog(prev => prev.filter(a => a.retention_record_id !== recordId));
+      } else if (type === 'incident') {
+        setHistoricalReports(prev => prev.filter(r => r.retention_record_id !== recordId));
+      }
+      showToast('success', 'Archived', 'Record successfully archived.');
+      fetchRetentionRecords();
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Error', err.message || 'Failed to archive record.');
+    }
+  };
+
+  const handleRequestDeleteRecord = async (recordId, type) => {
+    if (!recordId) {
+       showToast("error", "Error", "No retention record ID found.");
+       return;
+    }
+    try {
+      const res = await fetch(`/api/retention/request-delete/${recordId}`, { 
+        method: 'POST', 
+        headers: { 
+          'X-Role': currentRole,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to request deletion: ${res.status} ${errorText}`);
+      }
+      
+      if (type === 'announcement') {
+        setAnnouncementsLog(prev => prev.filter(a => a.retention_record_id !== recordId));
+      } else if (type === 'incident') {
+        setHistoricalReports(prev => prev.filter(r => r.retention_record_id !== recordId));
+      }
+      showToast('success', 'Scheduled for Deletion', 'Record moved to pending deletion.');
+      fetchRetentionRecords();
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Error', err.message || 'Failed to request deletion.');
     }
   };
 
@@ -1155,6 +1265,28 @@ export default function App() {
                   {ann.severity}
                 </span>
                 <span style={{ fontSize: '11px', color: '#94A3B8', fontFamily: 'monospace' }}>{ann.timestamp}</span>
+                {ann.retention_record_id && (
+                  <div style={{ display: 'flex', gap: '6px', marginLeft: '8px' }}>
+                    {currentRole !== 'viewer' && (
+                      <button
+                        onClick={() => handleArchiveRecord(ann.retention_record_id, 'announcement')}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        title="Archive Record"
+                      >
+                        <Archive size={14} />
+                      </button>
+                    )}
+                    {currentRole !== 'viewer' && (
+                      <button
+                        onClick={() => handleRequestDeleteRecord(ann.retention_record_id, 'announcement')}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        title="Request Deletion"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             
@@ -1858,20 +1990,19 @@ export default function App() {
             {activeTab === 'dashboard' && renderDashboard()}
             {activeTab === 'network' && renderNetworkTopology()}
             {activeTab === 'announcements' && renderAnnouncements()}
-            {activeTab === 'retention' && <RetentionPanel showToast={showToast} />}
+            {activeTab === 'retention' && <RetentionPanel showToast={showToast} currentRole={currentRole} />}
             {activeTab === 'settings' && renderSettings()}
             {activeTab === 'reports' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px', height: '100%', overflowY: 'auto', flex: 1 }}>
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <div>
-                    <h2 className="text-gradient" style={{ fontSize: '28px' }}>Incident History</h2>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>A persistent historical record of all AI-generated incident reports.</p>
+                    <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#0F172A', marginBottom: '6px' }}>Incident History</h2>
+                    <p style={{ color: '#64748B', fontSize: '14px' }}>A persistent historical record of all AI-generated incident reports.</p>
                   </div>
-                  {historicalReports.length > 0 && (
+                  {historicalReports.length > 0 && currentRole !== 'viewer' && (
                     <button 
-                      className="btn-primary" 
                       onClick={handleClearIncidentReports}
-                      style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', boxShadow: 'none', padding: '8px 14px', fontSize: '12px', borderRadius: '8px' }}
+                      style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FEE2E2', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                     >
                       <Trash2 size={14} style={{ marginRight: '6px', display: 'inline', verticalAlign: 'middle' }} /> Clear Incident History
                     </button>
@@ -1892,6 +2023,24 @@ export default function App() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748B', fontSize: '12px', fontWeight: '600' }}>
                           <Clock size={15} color="#0B2545" /> Generated: {hr.date}
+                          {hr.retention_record_id && (
+                            <div style={{ display: 'flex', gap: '6px', marginLeft: '10px' }}>
+                              {currentRole !== 'viewer' && (
+                                <button 
+                                  onClick={() => handleArchiveRecord(hr.retention_record_id, 'incident')}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }} 
+                                  title="Archive Record"
+                                ><Archive size={14} /></button>
+                              )}
+                              {currentRole !== 'viewer' && (
+                                <button 
+                                  onClick={() => handleRequestDeleteRecord(hr.retention_record_id, 'incident')}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}
+                                  title="Request Deletion"
+                                ><Trash2 size={14} /></button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.6' }}>

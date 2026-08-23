@@ -112,18 +112,70 @@ async def get_initial_state():
 
 @app.get("/api/announcements")
 async def get_announcements():
-    return ANNOUNCEMENTS_LOG
+    active_anns = []
+    records = retention_store.get_records(status=RetentionStatus.ACTIVE.value, entity_type="announcement")
+    for r in records:
+        if r.content_ref and isinstance(r.content_ref, list):
+            for ann in r.content_ref:
+                # Inject retention_record_id into each announcement
+                ann_with_id = dict(ann) if isinstance(ann, dict) else ann.copy()
+                ann_with_id['retention_record_id'] = r.id
+                active_anns.append(ann_with_id)
+    return active_anns
 
 @app.get("/api/incident-reports")
 async def get_incident_reports():
-    return INCIDENT_REPORTS
+    active_reports = []
+    records = retention_store.get_records(status=RetentionStatus.ACTIVE.value, entity_type="incident_report")
+    for r in records:
+        if r.content_ref and isinstance(r.content_ref, dict):
+            # Inject retention_record_id into the report
+            rep_with_id = r.content_ref.copy()
+            rep_with_id['retention_record_id'] = r.id
+            active_reports.append(rep_with_id)
+    return active_reports
+
+@app.post("/api/clear-announcements")
+async def clear_announcements(role: str = Header(default="station_master", alias="X-Role")):
+    records = retention_store.get_records(status=RetentionStatus.ACTIVE.value, entity_type="announcement")
+    count = 0
+    purge_dt = future_iso(30)
+    for r in records:
+        updated = retention_store.record_transition(
+            record=r,
+            new_status=RetentionStatus.PENDING_DELETION,
+            action="request_delete",
+            performed_by=role,
+            reason="Bulk clear requested via Announcement Audit",
+            scheduled_purge_at=purge_dt
+        )
+        await manager.broadcast(json.dumps({
+            "type": "retention_update",
+            "data": updated.dict()
+        }))
+        count += 1
+    return {"message": f"Requested deletion of {count} announcement batches"}
 
 @app.post("/api/clear-incident-reports")
-async def clear_incident_reports():
-    global INCIDENT_REPORTS
-    INCIDENT_REPORTS = []
-    save_incident_reports()
-    return {"status": "Incident reports log cleared"}
+async def clear_incident_reports(role: str = Header(default="station_master", alias="X-Role")):
+    records = retention_store.get_records(status=RetentionStatus.ACTIVE.value, entity_type="incident_report")
+    count = 0
+    purge_dt = future_iso(30)
+    for r in records:
+        updated = retention_store.record_transition(
+            record=r,
+            new_status=RetentionStatus.PENDING_DELETION,
+            action="request_delete",
+            performed_by=role,
+            reason="Bulk clear requested via Incident History",
+            scheduled_purge_at=purge_dt
+        )
+        await manager.broadcast(json.dumps({
+            "type": "retention_update",
+            "data": updated.dict()
+        }))
+        count += 1
+    return {"message": f"Requested deletion of {count} incident reports"}
 
 @app.get("/api/tts")
 async def get_tts_audio(text: str = Query(...), lang: str = Query("en")):
@@ -330,6 +382,7 @@ async def archive_retention_record(
             performed_by=role,
             reason=reason
         )
+        await manager.broadcast(json.dumps({"type": "retention_update", "data": updated.dict()}))
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -355,6 +408,7 @@ async def request_delete_retention_record(
             reason=reason,
             scheduled_purge_at=purge_date
         )
+        await manager.broadcast(json.dumps({"type": "retention_update", "data": updated.dict()}))
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -378,6 +432,7 @@ async def restore_retention_record(
             performed_by=role,
             reason=reason
         )
+        await manager.broadcast(json.dumps({"type": "retention_update", "data": updated.dict()}))
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -429,14 +484,12 @@ async def approve_delete_retention_record(
             "status": "confirmed",
             "new_record_status": updated.status.value if hasattr(updated.status, 'value') else updated.status
         }))
+        await manager.broadcast(json.dumps({"type": "retention_update", "data": updated.dict()}))
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 app.include_router(retention_router)
-
-
-
 
 @app.post("/api/generate-announcement")
 async def generate_announcement(event: DelayEvent):
@@ -497,13 +550,17 @@ async def run_agents(event: DelayEvent):
                 save_announcements()
                 
                 # Persist retention record for announcement batch
-                create_record(
+                ann_record = create_record(
                     entity_type="announcement",
                     content_ref=serialized_anns,
                     actor="system",
                     reason="Automated announcement batch generated during incident processing"
                 )
                 
+                for ann in serialized_anns:
+                    if isinstance(ann, dict):
+                        ann['retention_record_id'] = ann_record.id
+
                 await manager.broadcast(json.dumps({
                     "type": "announcements",
                     "data": serialized_anns
@@ -527,7 +584,7 @@ async def run_agents(event: DelayEvent):
                 save_incident_reports()
                 
                 # Persist retention record for incident report
-                create_record(
+                rep_record = create_record(
                     entity_type="incident_report",
                     content_ref=report_entry,
                     actor="system",
@@ -536,7 +593,8 @@ async def run_agents(event: DelayEvent):
                 
                 await manager.broadcast(json.dumps({
                     "type": "report",
-                    "data": report_content
+                    "data": report_content,
+                    "retention_record_id": rep_record.id
                 }))
         
         await asyncio.sleep(0.5) # Slight pause to make the UI look like agents are "thinking"
