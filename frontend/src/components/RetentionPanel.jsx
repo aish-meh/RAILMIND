@@ -635,6 +635,12 @@ export default function RetentionPanel({ showToast, currentRole }) {
           <div 
             className="executive-metric-card active-card"
             onClick={() => setStatusFilter(statusFilter === 'active' ? 'all' : 'active')}
+            style={{
+              cursor: 'pointer',
+              border: statusFilter === 'active' ? '2px solid #10B981' : '1px solid #E2E8F0',
+              background: statusFilter === 'active' ? 'rgba(16, 185, 129, 0.06)' : '#FFFFFF',
+              boxShadow: statusFilter === 'active' ? '0 4px 14px rgba(16, 185, 129, 0.15)' : undefined
+            }}
           >
             <div className="executive-metric-label">ACTIVE</div>
             <div className="executive-metric-value">{statusCounts.active}</div>
@@ -643,6 +649,12 @@ export default function RetentionPanel({ showToast, currentRole }) {
           <div 
             className="executive-metric-card pending-card"
             onClick={() => setStatusFilter(statusFilter === 'pending_deletion' ? 'all' : 'pending_deletion')}
+            style={{
+              cursor: 'pointer',
+              border: statusFilter === 'pending_deletion' ? '2px solid #D97706' : '1px solid #E2E8F0',
+              background: statusFilter === 'pending_deletion' ? 'rgba(217, 119, 6, 0.06)' : '#FFFFFF',
+              boxShadow: statusFilter === 'pending_deletion' ? '0 4px 14px rgba(217, 119, 6, 0.15)' : undefined
+            }}
           >
             <div className="executive-metric-label">PENDING DELETION</div>
             <div className="executive-metric-value" style={{ color: '#D97706' }}>{statusCounts.pending_deletion}</div>
@@ -651,6 +663,12 @@ export default function RetentionPanel({ showToast, currentRole }) {
           <div 
             className="executive-metric-card archived-card"
             onClick={() => setStatusFilter(statusFilter === 'archived' ? 'all' : 'archived')}
+            style={{
+              cursor: 'pointer',
+              border: statusFilter === 'archived' ? '2px solid #2563EB' : '1px solid #E2E8F0',
+              background: statusFilter === 'archived' ? 'rgba(37, 99, 235, 0.06)' : '#FFFFFF',
+              boxShadow: statusFilter === 'archived' ? '0 4px 14px rgba(37, 99, 235, 0.15)' : undefined
+            }}
           >
             <div className="executive-metric-label">ARCHIVED</div>
             <div className="executive-metric-value" style={{ color: '#2563EB' }}>{statusCounts.archived}</div>
@@ -659,11 +677,44 @@ export default function RetentionPanel({ showToast, currentRole }) {
           <div 
             className="executive-metric-card deleted-card"
             onClick={() => setStatusFilter(statusFilter === 'deleted' ? 'all' : 'deleted')}
+            style={{
+              cursor: 'pointer',
+              border: statusFilter === 'deleted' ? '2px solid #DC2626' : '1px solid #E2E8F0',
+              background: statusFilter === 'deleted' ? 'rgba(220, 38, 38, 0.06)' : '#FFFFFF',
+              boxShadow: statusFilter === 'deleted' ? '0 4px 14px rgba(220, 38, 38, 0.15)' : undefined
+            }}
           >
             <div className="executive-metric-label">DELETED</div>
             <div className="executive-metric-value" style={{ color: '#DC2626' }}>{statusCounts.deleted}</div>
           </div>
 
+        </div>
+
+        {/* Filter View Reset Bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 -12px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={() => setStatusFilter('all')}
+              style={{
+                padding: '6px 16px',
+                borderRadius: '20px',
+                border: statusFilter === 'all' ? '1px solid #0B2545' : '1px solid #CBD5E1',
+                background: statusFilter === 'all' ? '#0B2545' : '#FFFFFF',
+                color: statusFilter === 'all' ? '#FFFFFF' : '#475569',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              SHOW ALL RECORDS ({records.length})
+            </button>
+            {statusFilter !== 'all' && (
+              <span style={{ fontSize: '12px', fontWeight: '600', color: '#2563EB', background: '#EFF6FF', padding: '4px 12px', borderRadius: '12px', border: '1px solid #BFDBFE' }}>
+                Filtered by: <strong>{statusFilter.toUpperCase().replace('_', ' ')}</strong> ({filteredRecords.length} records) — Click card again or "SHOW ALL RECORDS" to reset
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Executive Table */}
